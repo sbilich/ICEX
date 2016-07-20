@@ -1,0 +1,10 @@
+/Users/sarabilich/Documents/ICEX/kmreimerICEX/build/CMakeFiles/install.dir
+/Users/sarabilich/Documents/ICEX/kmreimerICEX/build/CMakeFiles/ProjF.dir
+/Users/sarabilich/Documents/ICEX/kmreimerICEX/build/CMakeFiles/ALL_BUILD.dir
+/Users/sarabilich/Documents/ICEX/kmreimerICEX/build/CMakeFiles/ZERO_CHECK.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/CMakeFiles/install.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/CMakeFiles/uninstall.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/CMakeFiles/ALL_BUILD.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/CMakeFiles/ZERO_CHECK.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/src/CMakeFiles/install.dir
+/Users/sarabilich/Documents/lib/glfw-3.1.2/debug/src/CMakeFiles/glfw.dir
