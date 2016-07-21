@@ -15,6 +15,7 @@ out float dist;
 void main()
 {
 	gl_Position = P * V * M * vertPos;
+	gl_PointSize = 10.0;
 	fragNorRaw = (M * vec4(vertNor, 0.0)).xyz;
 
 	// Compute Phong vectors.
