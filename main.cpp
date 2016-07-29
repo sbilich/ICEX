@@ -160,11 +160,81 @@ GLuint quad_vertexbuffer;
 //geometry for path render
 GLuint path_VertexArrayID;
 GLuint path_vertexbuffer;
-GLfloat *path_vertices;
+//GLfloat *path_vertices;
+GLfloat path_vertices[150] = {
+    -16.00, 3.00, -16.00,
+    -14.49, 3.00, -15.08,
+    -15.63, 3.00, -14.04,
+    -14.11, 3.00, -12.46,
+    -13.64, 3.00, -10.62,
+    -11.52, 3.00, -9.14,
+    -11.31, 3.00, -9.87,
+    -11.57, 3.00, -7.65,
+    -9.65, 3.00, -6.20,
+    -7.32, 3.00, -4.40,
+    -5.33, 3.00, -4.89,
+    -5.89, 3.00, -4.45,
+    -6.79, 3.00, -2.47,
+    -5.14, 3.00, -1.04,
+    -4.65, 3.00, -0.34,
+    -5.21, 3.00, 0.07,
+    -4.25, 3.00, 0.28,
+    -4.36, 3.00, 1.24,
+    -4.72, 3.00, 2.72,
+    -3.52, 3.00, 3.67,
+    -3.35, 3.00, 3.75,
+    -3.92, 3.00, 4.95,
+    -2.93, 3.00, 5.59,
+    -0.88, 3.00, 5.31,
+    0.38, 3.00, 6.72,
+    0.83, 3.00, 6.87,
+    1.89, 3.00, 7.35,
+    2.36, 3.00, 7.38,
+    2.84, 3.00, 8.54,
+    3.93, 3.00, 8.85,
+    3.51, 3.00, 9.24,
+    3.15, 3.00, 10.07,
+    4.21, 3.00, 11.22,
+    4.64, 3.00, 11.93,
+    5.61, 3.00, 9.55,
+    6.16, 3.00, 7.48,
+    7.45, 3.00, 7.54,
+    8.25, 3.00, 8.79,
+    7.86, 3.00, 9.14,
+    8.15, 3.00, 8.63,
+    9.91, 3.00, 9.55,
+    10.97, 3.00, 9.97,
+    11.96, 3.00, 9.69,
+    12.01, 3.00, 10.67,
+    13.11, 3.00, 11.53,
+    14.20, 3.00, 12.23,
+    14.47, 3.00, 13.98,
+    14.87, 3.00, 14.94,
+    15.45, 3.00, 15.11,
+    16.00, 3.00, 15.96
+};
 
 GLuint path_indexbufferID;
 vector<GLuint *> path_indices;
 vector<GLuint> length_indices;
+
+GLuint index_list[50] = {
+    0, 1, 2, 3, 4, 5,
+    6, 7, 8, 9, 10, 11,
+    12, 13, 14, 15, 16,
+    17, 18, 19, 20, 21,
+    22, 23, 24, 25, 26,
+    27, 28, 29, 30, 31,
+    32, 33, 34, 35, 36,
+    37, 38, 39, 40, 41,
+    42, 43, 44, 45, 46,
+    47, 48, 49
+};
+
+
+GLuint *IndxBuffObjs;
+
+
 
 //for local copy of framebuffer
 typedef struct RGB {
@@ -173,7 +243,7 @@ typedef struct RGB {
   GLubyte b;
 } RGB;
 
-GLubyte myFrame[1024*768*4];  
+GLubyte myFrame[1024*768*4];
 
 Image *outImage;
 
@@ -186,7 +256,7 @@ void setCamPos3dof(Vector3d pos) {
    camPos = pos;
 }
 
-// Initializes arrays to circular path around Nefertiti head 
+// Initializes arrays to circular path around Nefertiti head
 void initCamPath() {
    double radius = 15;
    double dirDelta = (2 * M_PI) / iterations;
@@ -534,70 +604,73 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
    }
 }
 
-// Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
-void loadRoadMap() {
-    // get array of vertices
-    FILE *infoFile = fopen("../../resources/info.txt", "r");
-    char num[10];
-    
-    fgets(num, 10, infoFile);
-    GLuint numVert = atoi(num);
-    printf("numVert is %d\n", numVert);
-    fclose(infoFile);
-    
-    FILE *vertexFile = fopen("../../resources/roadmap.txt", "r");
-    path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
-    
-    int vert = 0;
-    float x, z;
-    float y = 3.0f;
-    
-    while (fscanf(vertexFile, "(%f, %f)  -  %*d\n", &x, &z) != EOF) {
-        path_vertices[vert++] = x;
-        path_vertices[vert++] = y;
-        path_vertices[vert++] = z;
-    }
-    
-    fclose(vertexFile);
-    // end of getting vertices
-    
-    // get array of indices
-    FILE *indexFile = fopen("../../resources/paths.txt", "r");
-    char cur[10];
-    int count = 0;
-    
-    // TODO: find a way to have IBOs with varying lengths. perhaps have separate array to index
-    // into that contains the lengths of each IBO?? Is there a better way? (Ask Zoe).
-    while (fscanf(indexFile, "%s", cur) != EOF) {
-        GLuint index;
-        
-        GLuint numIndices;
-        fscanf(indexFile, "number of indices: %d\n", &numIndices);
-        
-        
-        GLuint *indexArr = new GLuint[numIndices];
-        
-        fscanf(indexFile, "%s", cur);
-        int length = 0;
-        printf("count %d\n", count);
-        
-        while (strcmp(cur, "end")) {
-            length++;
-            index = atoi(cur);
-            printf("count %d\n", count);
-            
-            assert(indexArr);
-            indexArr[count++] = index;
-            fscanf(indexFile, "%s", cur);
-        }
-        path_indices.push_back(indexArr);
-        length_indices.push_back(length);
-        count = 0;
-    }
-    
-    fclose(indexFile);
-    // end of getting indices
-}
+//// Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
+//void loadRoadMap() {
+//    // get array of vertices
+//    FILE *infoFile = fopen("../../resources/info.txt", "r");
+//    char num[10];
+//    
+//    fgets(num, 10, infoFile);
+//    GLuint numVert = atoi(num);
+//    printf("numVert is %d\n", numVert);
+//    fclose(infoFile);
+//    
+//    FILE *vertexFile = fopen("../../resources/roadmap.txt", "r");
+//    path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
+//    
+//    int vert = 0;
+//    float x, z;
+//    float y = 3.0f;
+//    
+//    while (fscanf(vertexFile, " (%f, %f)  -  %*d", &x, &z) != EOF) {
+//        printf("Vertex %d: ", vert / 3);
+//        path_vertices[vert++] = x;
+//        printf("x is %.2f, ", x);
+//        path_vertices[vert++] = y;
+//        path_vertices[vert++] = z;
+//        printf("z is %.2f\n", z);
+//    }
+//    
+//    fclose(vertexFile);
+//    // end of getting vertices
+//    
+//    // get array of indices
+//    FILE *indexFile = fopen("../../resources/paths.txt", "r");
+//    char cur[10];
+//    int count = 0;
+//    
+//    // TODO: find a way to have IBOs with varying lengths. perhaps have separate array to index
+//    // into that contains the lengths of each IBO?? Is there a better way? (Ask Zoe).
+//    //while (fscanf(indexFile, " %s", cur) != EOF) {
+//    fscanf(indexFile, " %s", cur);
+//    
+//        GLuint index;
+//        
+//        GLuint numIndices = 0;
+//        fscanf(indexFile, " number of indices: %d", &numIndices);
+//        printf("num indices is %d\n", numIndices);
+//        
+//        GLuint *indexArr = new GLuint[numIndices];
+//        length_indices.push_back(numIndices);
+//        
+//        fscanf(indexFile, " %s", cur);
+//        
+//        while (strcmp(cur, "end")) {
+//            printf("num is %s\n", cur);
+//            index = atoi(cur);
+//            printf("index is %d\n", count);
+//            
+//            assert(indexArr);
+//            indexArr[count++] = index;
+//            fscanf(indexFile, " %s", cur);
+//        }
+//        path_indices.push_back(indexArr);
+//        count = 0;
+//   // }
+//    
+//    fclose(indexFile);
+//    // end of getting indices
+//}
 
 static void init()
 {
@@ -613,8 +686,8 @@ static void init()
    camDir = Vector3d(0.0, 0.0, 1.0);
 
    // Set background color.
-//   glClearColor(.051f, .553f, .875f, 1.0f);
-   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+   glClearColor(.051f, .553f, .875f, 1.0f);
+//   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
    // Enable z-buffer test.
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_BLEND);
@@ -740,11 +813,21 @@ static void init()
 //       15.11, 3.00, 15.32,
 //       15.99, 3.00, 15.96
 //   };
-
-   glGenBuffers(1, &path_vertexbuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
+    
+    glGenBuffers(1, &path_vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
+    
+    path_indices.push_back(index_list);
+    length_indices.push_back(50);
+    IndxBuffObjs = new GLuint[path_indices.size()];
+    
+    glGenBuffers(path_indices.size(), IndxBuffObjs);
+    for (int i=0; i < path_indices.size(); i++) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(path_indices[i]), path_indices[i], GL_STATIC_DRAW);
+    }
 
    // End of added for ICEX
 
@@ -948,7 +1031,7 @@ static void init()
    fadeWavePhongProg->addAttribute("vertPos");
    fadeWavePhongProg->addAttribute("vertNor");
     
-    loadRoadMap();
+    //loadRoadMap();
 }
 
 static void render()
@@ -997,127 +1080,127 @@ static void render()
    // Push this frame
    M->pushMatrix();
 
-   /* Draw objects that:
-   1. Are textured objs
-   2. Need blinn-phong lighting
-   3. Fade in the distance
-   */
-   fadeTexPhongProg->bind();
-   glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-   glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-   glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-   glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-   glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-   glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
-
-
-   // Draw the nautilus's
-   rustedMetalTex0->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(3, fadeTexPhongProg);
-   for (int i = 0; i < (int)nautilusTransforms.size(); i++) {
-      M->pushMatrix();
-      M->multMatrix(nautilusTransforms[i]);
-      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-      nautilus->draw(fadeTexPhongProg);
-      M->popMatrix();
-   }
-   rustedMetalTex0->unbind(0);
-
-   // Draw the submarine's
-   rustedMetalTex1->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(4, fadeTexPhongProg);
-   for (int i = 0; i < (int)submarineTransforms.size(); i++) {
-      M->pushMatrix();
-      M->multMatrix(submarineTransforms[i]);
-      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-      submarine->draw(fadeTexPhongProg);
-      M->popMatrix();
-   }
-   rustedMetalTex1->unbind(0);
-
-   // Draw the rocks:
-   coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(2, fadeTexPhongProg);
-   for (int i = 0; i < (int)rockTransforms.size(); i++) {
-      // Switch textures at the 1 / 3 and 2 / 3 marks.
-      if (i == (int)rockTransforms.size() / 3) {
-         coral0Tex->unbind(0);
-         coral1Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-      }
-      else if (i == 2 * (int)rockTransforms.size() / 3) {
-         coral1Tex->unbind(0);
-         coral2Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-      }
-
-      M->pushMatrix();
-      M->multMatrix(rockTransforms[i]);
-      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-      switch (i % 4) {
-      case 0:
-         rock0->draw(fadeTexPhongProg);
-         break;
-      case 1:
-         rock1->draw(fadeTexPhongProg);
-         break;
-      case 2:
-         rock2->draw(fadeTexPhongProg);
-         break;
-      case 3:
-         rock3->draw(fadeTexPhongProg);
-         break;
-      }
-      M->popMatrix();
-   }
-   coral2Tex->unbind(0);
-
-   // Draw the sand.
-   sandTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(0, fadeTexPhongProg);
-   Vector2i gridLL(-20, -20 );
-   Vector2i gridUR(20, 20);
-   float scale = 10.0f;
-   for (int i = gridLL(0); i < gridUR(0); i++) {
-      for (int j = gridLL(1); j < gridUR(1); j++) {
-         M->pushMatrix();
-         M->translate(Vector3f(2.0f * scale * (float)i, 0.0f, 2.0f * scale * (float)j));
-         M->scale(scale);
-         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-         plane->draw(fadeTexPhongProg);
-         M->popMatrix();
-      }
-   }
-   sandTex->unbind(0);
-
-   // Draw the surface
-   glDisable(GL_CULL_FACE);
-   surfaceTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(1, fadeTexPhongProg);
-   for (int i = gridLL(0); i < gridUR(0); i++) {
-      for (int j = gridLL(1); j < gridUR(1); j++) {
-         M->pushMatrix();
-         M->translate(Vector3f(2.0f * scale * (float)i, 30.0f, 2.0f * scale * (float)j));
-         M->scale(scale);
-         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-         plane->draw(fadeTexPhongProg);
-         M->popMatrix();
-      }
-   }
-   glEnable(GL_CULL_FACE);
-   surfaceTex->unbind(0);
-   // fadeTexPhongProg->unbind();
-
-   // Draw the wreck- chimChiminy
-   wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   setTextureMaterial(5, fadeTexPhongProg);
-   M->pushMatrix();
-   M->translate(Vector3f(0, 2, 0));
-   M->rotate(M_PI, Vector3f(1, 0, 0));
-   M->scale(8);
-   glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-   wreck->draw(fadeTexPhongProg);
-   M->popMatrix();
-   wreckTex->unbind(0);
-   fadeTexPhongProg->unbind();
+//   /* Draw objects that:
+//   1. Are textured objs
+//   2. Need blinn-phong lighting
+//   3. Fade in the distance
+//   */
+//   fadeTexPhongProg->bind();
+//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+//   glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+//   glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+//   glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+//   glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
+//
+//
+//   // Draw the nautilus's
+//   rustedMetalTex0->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(3, fadeTexPhongProg);
+//   for (int i = 0; i < (int)nautilusTransforms.size(); i++) {
+//      M->pushMatrix();
+//      M->multMatrix(nautilusTransforms[i]);
+//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//      nautilus->draw(fadeTexPhongProg);
+//      M->popMatrix();
+//   }
+//   rustedMetalTex0->unbind(0);
+//
+//   // Draw the submarine's
+//   rustedMetalTex1->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(4, fadeTexPhongProg);
+//   for (int i = 0; i < (int)submarineTransforms.size(); i++) {
+//      M->pushMatrix();
+//      M->multMatrix(submarineTransforms[i]);
+//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//      submarine->draw(fadeTexPhongProg);
+//      M->popMatrix();
+//   }
+//   rustedMetalTex1->unbind(0);
+//
+//   // Draw the rocks:
+//   coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(2, fadeTexPhongProg);
+//   for (int i = 0; i < (int)rockTransforms.size(); i++) {
+//      // Switch textures at the 1 / 3 and 2 / 3 marks.
+//      if (i == (int)rockTransforms.size() / 3) {
+//         coral0Tex->unbind(0);
+//         coral1Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//      }
+//      else if (i == 2 * (int)rockTransforms.size() / 3) {
+//         coral1Tex->unbind(0);
+//         coral2Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//      }
+//
+//      M->pushMatrix();
+//      M->multMatrix(rockTransforms[i]);
+//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//      switch (i % 4) {
+//      case 0:
+//         rock0->draw(fadeTexPhongProg);
+//         break;
+//      case 1:
+//         rock1->draw(fadeTexPhongProg);
+//         break;
+//      case 2:
+//         rock2->draw(fadeTexPhongProg);
+//         break;
+//      case 3:
+//         rock3->draw(fadeTexPhongProg);
+//         break;
+//      }
+//      M->popMatrix();
+//   }
+//   coral2Tex->unbind(0);
+//
+//   // Draw the sand.
+//   sandTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(0, fadeTexPhongProg);
+//   Vector2i gridLL(-20, -20 );
+//   Vector2i gridUR(20, 20);
+//   float scale = 10.0f;
+//   for (int i = gridLL(0); i < gridUR(0); i++) {
+//      for (int j = gridLL(1); j < gridUR(1); j++) {
+//         M->pushMatrix();
+//         M->translate(Vector3f(2.0f * scale * (float)i, 0.0f, 2.0f * scale * (float)j));
+//         M->scale(scale);
+//         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//         plane->draw(fadeTexPhongProg);
+//         M->popMatrix();
+//      }
+//   }
+//   sandTex->unbind(0);
+//
+//   // Draw the surface
+//   glDisable(GL_CULL_FACE);
+//   surfaceTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(1, fadeTexPhongProg);
+//   for (int i = gridLL(0); i < gridUR(0); i++) {
+//      for (int j = gridLL(1); j < gridUR(1); j++) {
+//         M->pushMatrix();
+//         M->translate(Vector3f(2.0f * scale * (float)i, 30.0f, 2.0f * scale * (float)j));
+//         M->scale(scale);
+//         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//         plane->draw(fadeTexPhongProg);
+//         M->popMatrix();
+//      }
+//   }
+//   glEnable(GL_CULL_FACE);
+//   surfaceTex->unbind(0);
+//   // fadeTexPhongProg->unbind();
+//
+//   // Draw the wreck- chimChiminy
+//   wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+//   setTextureMaterial(5, fadeTexPhongProg);
+//   M->pushMatrix();
+//   M->translate(Vector3f(0, 2, 0));
+//   M->rotate(M_PI, Vector3f(1, 0, 0));
+//   M->scale(8);
+//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//   wreck->draw(fadeTexPhongProg);
+//   M->popMatrix();
+//   wreckTex->unbind(0);
+//   fadeTexPhongProg->unbind();
 
    // Draw the wreck- beaufighter
    // wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
@@ -1132,90 +1215,90 @@ static void render()
    // wreckTex->unbind(0);
    // fadeTexPhongProg->unbind();
 
-   /* Draw objects that:
-   1. Are waving objs
-   2. Need blinn-phong lighting
-   3. Fade in the distance
-   */
-   fadeWavePhongProg->bind();
-   glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-   glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-   glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-   glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-   glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-   glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
-   glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
-   glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
+//   /* Draw objects that:
+//   1. Are waving objs
+//   2. Need blinn-phong lighting
+//   3. Fade in the distance
+//   */
+//   fadeWavePhongProg->bind();
+//   glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+//   glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+//   glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+//   glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+//   glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+//   glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
+//   glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
+//   glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
+//
+//   // Draw seaweeds
+//   setMaterial(7, fadeWavePhongProg);
+//   for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
+//      M->pushMatrix();
+//      M->multMatrix(seaweedTransforms[i]);
+//      glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//      seaweed->draw(fadeWavePhongProg);
+//      M->popMatrix();
+//   }
+//   fadeWavePhongProg->unbind();
+//
+//   /* Draw objects that:
+//   1. Are sharks
+//   2. Need blinn-phong lighting
+//   3. Fade in the distance
+//   */
+//   // Draw the sharks using a special shader that lightens their underbellies.
+//   fadeSharkPhongProg->bind();
+//   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+//   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+//   glUniform3f(fadeSharkPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+//   glUniform3f(fadeSharkPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+//   glUniform3f(fadeSharkPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+//   glUniform1f(fadeSharkPhongProg->getUniform("viewDist"), viewDist);
+//   glUniform1f(fadeSharkPhongProg->getUniform("baseAlpha"), 1.0f);
+//
+//   // Draw sharks.
+//   setMaterial(5, fadePhongProg);
+//   // for (unsigned int i = 0; i < sharks.size(); i++) {
+//     //  sharks[i].draw(fadeSharkPhongProg, t);
+//   // }
+//   shark.draw(fadeSharkPhongProg, t);
+//
+//   fadeSharkPhongProg->unbind();
 
-   // Draw seaweeds
-   setMaterial(7, fadeWavePhongProg);
-   for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
-      M->pushMatrix();
-      M->multMatrix(seaweedTransforms[i]);
-      glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-      seaweed->draw(fadeWavePhongProg);
-      M->popMatrix();
-   }
-   fadeWavePhongProg->unbind();
-
-   /* Draw objects that:
-   1. Are sharks
-   2. Need blinn-phong lighting
-   3. Fade in the distance
-   */
-   // Draw the sharks using a special shader that lightens their underbellies.
-   fadeSharkPhongProg->bind();
-   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-   glUniform3f(fadeSharkPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-   glUniform3f(fadeSharkPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-   glUniform3f(fadeSharkPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-   glUniform1f(fadeSharkPhongProg->getUniform("viewDist"), viewDist);
-   glUniform1f(fadeSharkPhongProg->getUniform("baseAlpha"), 1.0f);
-
-   // Draw sharks.
-   setMaterial(5, fadePhongProg);
-   // for (unsigned int i = 0; i < sharks.size(); i++) {
-     //  sharks[i].draw(fadeSharkPhongProg, t);
-   // }
-   shark.draw(fadeSharkPhongProg, t);
-
-   fadeSharkPhongProg->unbind();
-
-   /* Draw objects that:
-   1. Are standard objs
-   2. Need blinn-phong lighting
-   3. Fade in the distance
-   */
-   fadePhongProg->bind();
-   glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-   glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-   glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-   glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-   glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-   glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-   glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
-   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
-
-   // Draw Nefertiti
-   // M->pushMatrix();
-   // M->translate(Vector3f(0.0f, 1.5f, 2.0f));
-   // M->rotate((float)M_PI * 0.33f, Vector3f(-1.0f, 0.0f, 1.0f));
-   // M->rotate((float)-M_PI * 0.5f, Vector3f(1.0f, 0.0f, 0.0f));
-   // M->scale(10.0f);
-   // glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-   // setMaterial(2, fadePhongProg);
-   // nefertiti->draw(fadePhongProg);
-   // M->popMatrix();
-
-   // Draw bubbles.
-   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
-   setMaterial(6, fadePhongProg);
-   for (unsigned int i = 0; i < bubbles.size(); i++) {
-      bubbles[i].draw(fadePhongProg, t);
-   }
-    fadePhongProg->unbind();
-
+//   /* Draw objects that:
+//   1. Are standard objs
+//   2. Need blinn-phong lighting
+//   3. Fade in the distance
+//   */
+//   fadePhongProg->bind();
+//   glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+//   glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+//   glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//   glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+//   glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+//   glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+//   glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+//   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+//
+//   // Draw Nefertiti
+//   // M->pushMatrix();
+//   // M->translate(Vector3f(0.0f, 1.5f, 2.0f));
+//   // M->rotate((float)M_PI * 0.33f, Vector3f(-1.0f, 0.0f, 1.0f));
+//   // M->rotate((float)-M_PI * 0.5f, Vector3f(1.0f, 0.0f, 0.0f));
+//   // M->scale(10.0f);
+//   // glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+//   // setMaterial(2, fadePhongProg);
+//   // nefertiti->draw(fadePhongProg);
+//   // M->popMatrix();
+//
+//   // Draw bubbles.
+//   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
+//   setMaterial(6, fadePhongProg);
+//   for (unsigned int i = 0; i < bubbles.size(); i++) {
+//      bubbles[i].draw(fadePhongProg, t);
+//   }
+//    fadePhongProg->unbind();
+//
     
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
@@ -1227,46 +1310,38 @@ static void render()
     glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     
     //    Trying to draw out PRM path
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-       cout << "error 1088: " << error << endl;
-    }
+//    GLenum error = glGetError();
+//    if (error != GL_NO_ERROR) {
+//       cout << "error 1088: " << error << endl;
+//    }
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
     
     glBindVertexArray(path_VertexArrayID);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); //(void *) 0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
     
     for (int i = 0; i < path_indices.size(); i++) {
-        glGenBuffers(1, &path_indexbufferID);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, path_indexbufferID);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(path_indices[i]), path_indices[i], GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
+        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
-        // TODO: Find out how to represent IBOs with varying lengths and how to keep track of the length
-        // of each IBO.
         glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, path_indices[i]);
+        
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            cout << "error 1097: " << error << endl;
+        }
     }
-   
-//    error = glGetError();
-//    if (error != GL_NO_ERROR) {
-//       cout << "error 1097: " << error << endl;
-//    }
-//    
+    
 //    //second paramater is count
 //    glLineWidth(1);
 //    glDrawArrays(GL_LINE_STRIP, 0, 61);
-//    
+
+    glDisableVertexAttribArray(0);
 //    error = glGetError();
 //    if (error != GL_NO_ERROR) {
-//       cout << "error 1102: " << error << endl;
+//       cout << "error 1107: " << error << endl;
 //    }
-    
-    glDisableVertexAttribArray(0);
-    error = glGetError();
-    if (error != GL_NO_ERROR) {
-       cout << "error 1107: " << error << endl;
-    }
     
    fadePhongProg->unbind();
    
@@ -1385,7 +1460,7 @@ int main(int argc, char **argv)
    // Loop until the user closes the window.
    while(!glfwWindowShouldClose(window)) {
       // Render scene.
-      //render();
+       render();
       // Swap front and back buffers.
       glfwSwapBuffers(window);
       // Poll for and process events.
