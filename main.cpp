@@ -160,76 +160,76 @@ GLuint quad_vertexbuffer;
 //geometry for path render
 GLuint path_VertexArrayID;
 GLuint path_vertexbuffer;
-//GLfloat *path_vertices;
-GLfloat path_vertices[150] = {
-    -16.00, 3.00, -16.00,
-    -14.49, 3.00, -15.08,
-    -15.63, 3.00, -14.04,
-    -14.11, 3.00, -12.46,
-    -13.64, 3.00, -10.62,
-    -11.52, 3.00, -9.14,
-    -11.31, 3.00, -9.87,
-    -11.57, 3.00, -7.65,
-    -9.65, 3.00, -6.20,
-    -7.32, 3.00, -4.40,
-    -5.33, 3.00, -4.89,
-    -5.89, 3.00, -4.45,
-    -6.79, 3.00, -2.47,
-    -5.14, 3.00, -1.04,
-    -4.65, 3.00, -0.34,
-    -5.21, 3.00, 0.07,
-    -4.25, 3.00, 0.28,
-    -4.36, 3.00, 1.24,
-    -4.72, 3.00, 2.72,
-    -3.52, 3.00, 3.67,
-    -3.35, 3.00, 3.75,
-    -3.92, 3.00, 4.95,
-    -2.93, 3.00, 5.59,
-    -0.88, 3.00, 5.31,
-    0.38, 3.00, 6.72,
-    0.83, 3.00, 6.87,
-    1.89, 3.00, 7.35,
-    2.36, 3.00, 7.38,
-    2.84, 3.00, 8.54,
-    3.93, 3.00, 8.85,
-    3.51, 3.00, 9.24,
-    3.15, 3.00, 10.07,
-    4.21, 3.00, 11.22,
-    4.64, 3.00, 11.93,
-    5.61, 3.00, 9.55,
-    6.16, 3.00, 7.48,
-    7.45, 3.00, 7.54,
-    8.25, 3.00, 8.79,
-    7.86, 3.00, 9.14,
-    8.15, 3.00, 8.63,
-    9.91, 3.00, 9.55,
-    10.97, 3.00, 9.97,
-    11.96, 3.00, 9.69,
-    12.01, 3.00, 10.67,
-    13.11, 3.00, 11.53,
-    14.20, 3.00, 12.23,
-    14.47, 3.00, 13.98,
-    14.87, 3.00, 14.94,
-    15.45, 3.00, 15.11,
-    16.00, 3.00, 15.96
-};
+GLfloat *path_vertices;
+//GLfloat path_vertices[150] = {
+//    -16.00, 3.00, -16.00,
+//    -14.49, 3.00, -15.08,
+//    -15.63, 3.00, -14.04,
+//    -14.11, 3.00, -12.46,
+//    -13.64, 3.00, -10.62,
+//    -11.52, 3.00, -9.14,
+//    -11.31, 3.00, -9.87,
+//    -11.57, 3.00, -7.65,
+//    -9.65, 3.00, -6.20,
+//    -7.32, 3.00, -4.40,
+//    -5.33, 3.00, -4.89,
+//    -5.89, 3.00, -4.45,
+//    -6.79, 3.00, -2.47,
+//    -5.14, 3.00, -1.04,
+//    -4.65, 3.00, -0.34,
+//    -5.21, 3.00, 0.07,
+//    -4.25, 3.00, 0.28,
+//    -4.36, 3.00, 1.24,
+//    -4.72, 3.00, 2.72,
+//    -3.52, 3.00, 3.67,
+//    -3.35, 3.00, 3.75,
+//    -3.92, 3.00, 4.95,
+//    -2.93, 3.00, 5.59,
+//    -0.88, 3.00, 5.31,
+//    0.38, 3.00, 6.72,
+//    0.83, 3.00, 6.87,
+//    1.89, 3.00, 7.35,
+//    2.36, 3.00, 7.38,
+//    2.84, 3.00, 8.54,
+//    3.93, 3.00, 8.85,
+//    3.51, 3.00, 9.24,
+//    3.15, 3.00, 10.07,
+//    4.21, 3.00, 11.22,
+//    4.64, 3.00, 11.93,
+//    5.61, 3.00, 9.55,
+//    6.16, 3.00, 7.48,
+//    7.45, 3.00, 7.54,
+//    8.25, 3.00, 8.79,
+//    7.86, 3.00, 9.14,
+//    8.15, 3.00, 8.63,
+//    9.91, 3.00, 9.55,
+//    10.97, 3.00, 9.97,
+//    11.96, 3.00, 9.69,
+//    12.01, 3.00, 10.67,
+//    13.11, 3.00, 11.53,
+//    14.20, 3.00, 12.23,
+//    14.47, 3.00, 13.98,
+//    14.87, 3.00, 14.94,
+//    15.45, 3.00, 15.11,
+//    16.00, 3.00, 15.96
+//};
 
 GLuint path_indexbufferID;
 vector<GLuint *> path_indices;
 vector<GLuint> length_indices;
-
-GLuint index_list[50] = {
-    0, 1, 2, 3, 4, 5,
-    6, 7, 8, 9, 10, 11,
-    12, 13, 14, 15, 16,
-    17, 18, 19, 20, 21,
-    22, 23, 24, 25, 26,
-    27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36,
-    37, 38, 39, 40, 41,
-    42, 43, 44, 45, 46,
-    47, 48, 49
-};
+//
+//GLuint index_list[50] = {
+//    0, 1, 2, 3, 4, 5,
+//    6, 7, 8, 9, 10, 11,
+//    12, 13, 14, 15, 16,
+//    17, 18, 19, 20, 21,
+//    22, 23, 24, 25, 26,
+//    27, 28, 29, 30, 31,
+//    32, 33, 34, 35, 36,
+//    37, 38, 39, 40, 41,
+//    42, 43, 44, 45, 46,
+//    47, 48, 49
+//};
 
 
 GLuint *IndxBuffObjs;
@@ -604,73 +604,73 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
    }
 }
 
-//// Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
-//void loadRoadMap() {
-//    // get array of vertices
-//    FILE *infoFile = fopen("../../resources/info.txt", "r");
-//    char num[10];
-//    
-//    fgets(num, 10, infoFile);
-//    GLuint numVert = atoi(num);
-//    printf("numVert is %d\n", numVert);
-//    fclose(infoFile);
-//    
-//    FILE *vertexFile = fopen("../../resources/roadmap.txt", "r");
-//    path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
-//    
-//    int vert = 0;
-//    float x, z;
-//    float y = 3.0f;
-//    
-//    while (fscanf(vertexFile, " (%f, %f)  -  %*d", &x, &z) != EOF) {
-//        printf("Vertex %d: ", vert / 3);
-//        path_vertices[vert++] = x;
-//        printf("x is %.2f, ", x);
-//        path_vertices[vert++] = y;
-//        path_vertices[vert++] = z;
-//        printf("z is %.2f\n", z);
-//    }
-//    
-//    fclose(vertexFile);
-//    // end of getting vertices
-//    
-//    // get array of indices
-//    FILE *indexFile = fopen("../../resources/paths.txt", "r");
-//    char cur[10];
-//    int count = 0;
-//    
-//    // TODO: find a way to have IBOs with varying lengths. perhaps have separate array to index
-//    // into that contains the lengths of each IBO?? Is there a better way? (Ask Zoe).
-//    //while (fscanf(indexFile, " %s", cur) != EOF) {
-//    fscanf(indexFile, " %s", cur);
-//    
-//        GLuint index;
-//        
-//        GLuint numIndices = 0;
-//        fscanf(indexFile, " number of indices: %d", &numIndices);
-//        printf("num indices is %d\n", numIndices);
-//        
-//        GLuint *indexArr = new GLuint[numIndices];
-//        length_indices.push_back(numIndices);
-//        
-//        fscanf(indexFile, " %s", cur);
-//        
-//        while (strcmp(cur, "end")) {
-//            printf("num is %s\n", cur);
-//            index = atoi(cur);
-//            printf("index is %d\n", count);
-//            
-//            assert(indexArr);
-//            indexArr[count++] = index;
-//            fscanf(indexFile, " %s", cur);
-//        }
-//        path_indices.push_back(indexArr);
-//        count = 0;
-//   // }
-//    
-//    fclose(indexFile);
-//    // end of getting indices
-//}
+// Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
+void loadRoadMap() {
+    // get array of vertices
+    FILE *infoFile = fopen("../../resources/info.txt", "r");
+    char num[10];
+    
+    fgets(num, 10, infoFile);
+    GLuint numVert = atoi(num);
+    printf("numVert is %d\n", numVert);
+    fclose(infoFile);
+    
+    FILE *vertexFile = fopen("../../resources/roadmap.txt", "r");
+    path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
+    
+    int vert = 0;
+    float x, z;
+    float y = 3.0f;
+    
+    while (fscanf(vertexFile, " (%f, %f)  -  %*d", &x, &z) != EOF) {
+        printf("Vertex %d: ", vert / 3);
+        path_vertices[vert++] = x;
+        printf("x is %.2f, ", x);
+        path_vertices[vert++] = y;
+        path_vertices[vert++] = z;
+        printf("z is %.2f\n", z);
+    }
+    
+    fclose(vertexFile);
+    // end of getting vertices
+    
+    printf("Successfully loaded vertex array\n");
+    
+    // get array of indices
+    FILE *indexFile = fopen("../../resources/paths.txt", "r");
+    char cur[10];
+    int count = 0;
+    
+    // TODO: find a way to have IBOs with varying lengths. perhaps have separate array to index
+    // into that contains the lengths of each IBO?? Is there a better way? (Ask Zoe).
+    while (fscanf(indexFile, " %s", cur) != EOF) {
+        GLuint index;
+        
+        GLuint numIndices = 0;
+        fscanf(indexFile, " number of indices: %d", &numIndices);
+        printf("num indices is %d\n", numIndices);
+        
+        GLuint *indexArr = new GLuint[numIndices];
+        length_indices.push_back(numIndices);
+        
+        fscanf(indexFile, " %s", cur);
+        
+        while (strcmp(cur, "end")) {
+            //printf("num is %s\n", cur);
+            index = atoi(cur);
+            //printf("index is %d\n", count);
+            
+            assert(indexArr);
+            indexArr[count++] = index;
+            fscanf(indexFile, " %s", cur);
+        }
+        path_indices.push_back(indexArr);
+        count = 0;
+    }
+    
+    fclose(indexFile);
+    // end of getting indices
+}
 
 static void init()
 {
@@ -686,8 +686,8 @@ static void init()
    camDir = Vector3d(0.0, 0.0, 1.0);
 
    // Set background color.
-   glClearColor(.051f, .553f, .875f, 1.0f);
-//   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+//   glClearColor(.051f, .553f, .875f, 1.0f);
+   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
    // Enable z-buffer test.
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_BLEND);
@@ -744,7 +744,9 @@ static void init()
    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
-   // Setup vbo for rendering path lines
+   loadRoadMap();
+    
+   // Setup vao for rendering path lines
    glGenVertexArrays(1, &path_VertexArrayID);
    glBindVertexArray(path_VertexArrayID);
 
@@ -814,13 +816,14 @@ static void init()
 //       15.99, 3.00, 15.96
 //   };
     
+    // setup vbo for rendering path lines
     glGenBuffers(1, &path_vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
     
-    path_indices.push_back(index_list);
-    length_indices.push_back(50);
+    //path_indices.push_back(index_list);
+    //length_indices.push_back(50);
     IndxBuffObjs = new GLuint[path_indices.size()];
     
     glGenBuffers(path_indices.size(), IndxBuffObjs);
@@ -1030,8 +1033,6 @@ static void init()
    fadeWavePhongProg->addUniform("wave");
    fadeWavePhongProg->addAttribute("vertPos");
    fadeWavePhongProg->addAttribute("vertNor");
-    
-    //loadRoadMap();
 }
 
 static void render()
@@ -1325,7 +1326,7 @@ static void render()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
 //        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
-        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, path_indices[i]);
+        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);//path_indices[i]);
         
         GLenum error = glGetError();
         if (error != GL_NO_ERROR) {
