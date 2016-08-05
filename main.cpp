@@ -604,18 +604,20 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
    }
 }
 
-// Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
-void loadRoadMap() {
+// MARK: Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
+void loadRoadMapFromMotionPlanFiles() {
     // get array of vertices
-    FILE *infoFile = fopen("../../resources/info.txt", "r");
+    const string info_file_name = string(RESOURCE_DIR + "info.txt");
+    FILE *infoFile = fopen(info_file_name.c_str(), "r");
     char num[10];
     
     fgets(num, 10, infoFile);
     GLuint numVert = atoi(num);
-    printf("numVert is %d\n", numVert);
+//    printf("numVert is %d\n", numVert);
     fclose(infoFile);
     
-    FILE *vertexFile = fopen("../../resources/roadmap.txt", "r");
+    const string vertex_file_name = string(RESOURCE_DIR + "roadmap.txt");
+    FILE *vertexFile = fopen(vertex_file_name.c_str(), "r");
     path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
     
     int vert = 0;
@@ -632,23 +634,21 @@ void loadRoadMap() {
     }
     
     fclose(vertexFile);
+    printf("loaded vertices\n");
     // end of getting vertices
     
-    printf("Successfully loaded vertex array\n");
-    
     // get array of indices
-    FILE *indexFile = fopen("../../resources/paths.txt", "r");
+    const string paths_file_name = string(RESOURCE_DIR + "paths.txt");
+    FILE *indexFile = fopen(paths_file_name.c_str(), "r");
     char cur[10];
     int count = 0;
     
-    // TODO: find a way to have IBOs with varying lengths. perhaps have separate array to index
-    // into that contains the lengths of each IBO?? Is there a better way? (Ask Zoe).
     while (fscanf(indexFile, " %s", cur) != EOF) {
         GLuint index;
         
         GLuint numIndices = 0;
         fscanf(indexFile, " number of indices: %d", &numIndices);
-        printf("num indices is %d\n", numIndices);
+//        printf("num indices is %d\n", numIndices);
         
         GLuint *indexArr = new GLuint[numIndices];
         length_indices.push_back(numIndices);
@@ -670,6 +670,8 @@ void loadRoadMap() {
     
     fclose(indexFile);
     // end of getting indices
+    
+    printf("Loaded indices\n");
 }
 
 static void init()
@@ -686,8 +688,8 @@ static void init()
    camDir = Vector3d(0.0, 0.0, 1.0);
 
    // Set background color.
-//   glClearColor(.051f, .553f, .875f, 1.0f);
-   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+//   glClearColor(.051f, .553f, .875f, 1.0f); // blue background
+   glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
    // Enable z-buffer test.
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_BLEND);
@@ -696,7 +698,7 @@ static void init()
    glCullFace(GL_BACK);
    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
 
-   // Added for ICEX
+   // MARK: Init additions for ICEX
    // Generate framebuffer, texture, and depth renderbuffer
    glfwGetFramebufferSize(window, &actualW, &actualH);
 
@@ -744,7 +746,8 @@ static void init()
    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
    glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
-   loadRoadMap();
+   loadRoadMapFromMotionPlanFiles();
+    //loadRoadMapFromCSVFiles();
     
    // Setup vao for rendering path lines
    glGenVertexArrays(1, &path_VertexArrayID);
@@ -822,8 +825,6 @@ static void init()
     glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
     
-    //path_indices.push_back(index_list);
-    //length_indices.push_back(50);
     IndxBuffObjs = new GLuint[path_indices.size()];
     
     glGenBuffers(path_indices.size(), IndxBuffObjs);
@@ -1071,7 +1072,7 @@ static void render()
 
    // Apply initial matrix transforms
    P->pushMatrix();
-   P->perspective(45.0f, aspect, 0.01f, viewDist);
+    P->perspective(45.0f, aspect, 0.01f, viewDist);
 
    // Create the view matrix
    V->pushMatrix();
@@ -1310,11 +1311,7 @@ static void render()
     glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
     glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     
-    //    Trying to draw out PRM path
-//    GLenum error = glGetError();
-//    if (error != GL_NO_ERROR) {
-//       cout << "error 1088: " << error << endl;
-//    }
+    //    MARK: Trying to draw out PRM path
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
     
     glBindVertexArray(path_VertexArrayID);
@@ -1324,25 +1321,18 @@ static void render()
     
     for (int i = 0; i < path_indices.size(); i++) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
-//        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
-        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);//path_indices[i]);
+        //for (int j = 0; j < )
+        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
+        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
         GLenum error = glGetError();
         if (error != GL_NO_ERROR) {
             cout << "error 1097: " << error << endl;
         }
     }
-    
-//    //second paramater is count
-//    glLineWidth(1);
-//    glDrawArrays(GL_LINE_STRIP, 0, 61);
 
     glDisableVertexAttribArray(0);
-//    error = glGetError();
-//    if (error != GL_NO_ERROR) {
-//       cout << "error 1107: " << error << endl;
-//    }
     
    fadePhongProg->unbind();
    
