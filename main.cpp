@@ -1240,7 +1240,7 @@ void drawWavingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, s
  3. Fade in the distance
  */
 void drawFadingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                       Vector3f &lightPos,Vector3f &lightCol, double t) {
+                       Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1255,6 +1255,92 @@ void drawFadingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, s
     fadePhongProg->unbind();
 }
 
+// MARK: Draw Roadmap
+void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+               Vector3f &lightPos,Vector3f &lightCol) {
+    fadePhongProg->bind();
+    glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+    
+    glBindVertexArray(path_VertexArrayID);
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+    
+    for (int i = 0; i < path_indices.size(); i++) {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
+        
+        //        printf("Printing out current ibo\n");
+        //        for (int j = 0; j < length_indices[i]; j++) {
+        //            printf("%d\n", IndxBuffObjs[i][j]);
+        //        }
+        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
+        
+        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            cout << "error 1097: " << error << endl;
+        }
+    }
+    
+    glDisableVertexAttribArray(0);
+    fadePhongProg->unbind();
+}
+
+//void readFromFrameBuffer(int width, int height) {
+//     Read directly from framebuffer- super slow, don't do
+//     vector<unsigned char> pixels(actualW * actualH * 3);
+//     glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
+//     GLfloat pixels[width * height];
+//     glGetBufferSubData(GL_COPY_WRITE_BUFFER, 0, width * height,
+//      &pixels[0]);
+//     glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, width * height * sizeof(GL_BYTE),
+//      &pixels[0]);
+//     glBufferData(GL_STATIC_READ)
+//     glGetNamedBufferSubData(0, 0, width * height, &pixels[0]);
+//       for (int i = 0; i < width; i++) {
+//        for (int j = 0; j < height; j++) {
+//           cout << (int)pixels[i * j + j] << " "
+//            << (int)pixels[i * j + j + 1] << " "
+//            << (int)pixels[i * j + j + 2] << ", ";
+//        }
+//        cout << endl << endl;
+//       }
+//     cout << endl;
+//}
+
+//void writeToTexture() {
+//    // Zoe's code to write to texture
+//     //regardless unbind the FBO
+//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//     
+//     // Clear framebuffer.
+//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//     
+//     //draw textured quad
+//     tex_prog->bind();
+//     glActiveTexture(GL_TEXTURE0);
+//     glBindTexture(GL_TEXTURE_2D, renderTexture);
+//     glUniform1i(tex_prog->getUniform("texBuf"), 0);
+//     
+//     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+//     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
+//     
+//     glEnableVertexAttribArray(0);
+//     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+//     glDrawArrays(GL_TRIANGLES, 0, 6);
+//     glDisableVertexAttribArray(0);
+//     tex_prog->unbind();
+//}
+
+// MARK: render objects to scene
 static void render()
 {
     double t = glfwGetTime();
@@ -1302,121 +1388,14 @@ static void render()
     M->pushMatrix();
     
     drawTexturedObjects(P, V, M, lightPos, lightCol);
-    drawWavingObjects(P, V, M, lightPos, lightCol, t);
-    drawFadingObjects(P, V, M, lightPos, lightCol, t);
-    
-    //   /* Draw objects that:
-    //   1. Are standard objs
-    //   2. Need blinn-phong lighting
-    //   3. Fade in the distance
-    //   */
-    //   fadePhongProg->bind();
-    //   glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-    //   glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-    //   glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    //   glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    //   glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    //   glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-    //   glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
-    //   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
-    //
-    //   // Draw bubbles.
-    //   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
-    //   setMaterial(6, fadePhongProg);
-    //   for (unsigned int i = 0; i < bubbles.size(); i++) {
-    //      bubbles[i].draw(fadePhongProg, t);
-    //   }
-    //    fadePhongProg->unbind();
-    //
-    
-    fadePhongProg->bind();
-    glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-    glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-    glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
-    
-    //    MARK: Trying to draw out PRM path
-    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
-    
-    glBindVertexArray(path_VertexArrayID);
-    glEnableVertexAttribArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
-    
-    for (int i = 0; i < path_indices.size(); i++) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
-        
-        //        printf("Printing out current ibo\n");
-        //        for (int j = 0; j < length_indices[i]; j++) {
-        //            printf("%d\n", IndxBuffObjs[i][j]);
-        //        }
-        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
-        
-        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            cout << "error 1097: " << error << endl;
-        }
-    }
-    
-    glDisableVertexAttribArray(0);
-    
-    fadePhongProg->unbind();
+//    drawWavingObjects(P, V, M, lightPos, lightCol, t);
+//    drawFadingObjects(P, V, M, lightPos, lightCol, t);
+    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
     M->popMatrix();
     V->popMatrix();
     P->popMatrix();
-    
-    
-    // Read directly from framebuffer- super slow, don't do
-    // vector<unsigned char> pixels(actualW * actualH * 3);
-    // glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
-    // GLfloat pixels[width * height];
-    // glGetBufferSubData(GL_COPY_WRITE_BUFFER, 0, width * height,
-    //  &pixels[0]);
-    // glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, width * height * sizeof(GL_BYTE),
-    //  &pixels[0]);
-    // glBufferData(GL_STATIC_READ)
-    // glGetNamedBufferSubData(0, 0, width * height, &pixels[0]);
-    //   for (int i = 0; i < width; i++) {
-    //    for (int j = 0; j < height; j++) {
-    //       cout << (int)pixels[i * j + j] << " "
-    //        << (int)pixels[i * j + j + 1] << " "
-    //        << (int)pixels[i * j + j + 2] << ", ";
-    //    }
-    //    cout << endl << endl;
-    //   }
-    // cout << endl;
-    
-    
-    // Zoe's code to write to texture
-    /*
-     //regardless unbind the FBO
-     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-     
-     // Clear framebuffer.
-     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-     
-     //draw textured quad
-     tex_prog->bind();
-     glActiveTexture(GL_TEXTURE0);
-     glBindTexture(GL_TEXTURE_2D, renderTexture);
-     glUniform1i(tex_prog->getUniform("texBuf"), 0);
-     
-     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
-     
-     glEnableVertexAttribArray(0);
-     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
-     glDrawArrays(GL_TRIANGLES, 0, 6);
-     glDisableVertexAttribArray(0);
-     tex_prog->unbind();
-     */
 }
 
 int main(int argc, char **argv)
