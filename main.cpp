@@ -1036,271 +1036,298 @@ static void init()
    fadeWavePhongProg->addAttribute("vertNor");
 }
 
+void drawNautilus(shared_ptr<MatrixStack> &M) {
+    rustedMetalTex0->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(3, fadeTexPhongProg);
+    for (int i = 0; i < (int)nautilusTransforms.size(); i++) {
+        M->pushMatrix();
+        M->multMatrix(nautilusTransforms[i]);
+        glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        nautilus->draw(fadeTexPhongProg);
+        M->popMatrix();
+    }
+    rustedMetalTex0->unbind(0);
+}
+
+void drawSubmarine(shared_ptr<MatrixStack> &M) {
+    rustedMetalTex1->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(4, fadeTexPhongProg);
+    for (int i = 0; i < (int)submarineTransforms.size(); i++) {
+        M->pushMatrix();
+        M->multMatrix(submarineTransforms[i]);
+        glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        submarine->draw(fadeTexPhongProg);
+        M->popMatrix();
+    }
+    rustedMetalTex1->unbind(0);
+}
+
+void drawRocks(shared_ptr<MatrixStack> &M) {
+    coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(2, fadeTexPhongProg);
+    for (int i = 0; i < (int)rockTransforms.size(); i++) {
+        // Switch textures at the 1 / 3 and 2 / 3 marks.
+        if (i == (int)rockTransforms.size() / 3) {
+            coral0Tex->unbind(0);
+            coral1Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+        }
+        else if (i == 2 * (int)rockTransforms.size() / 3) {
+            coral1Tex->unbind(0);
+            coral2Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+        }
+        
+        M->pushMatrix();
+        M->multMatrix(rockTransforms[i]);
+        glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        switch (i % 4) {
+            case 0:
+                rock0->draw(fadeTexPhongProg);
+                break;
+            case 1:
+                rock1->draw(fadeTexPhongProg);
+                break;
+            case 2:
+                rock2->draw(fadeTexPhongProg);
+                break;
+            case 3:
+                rock3->draw(fadeTexPhongProg);
+                break;
+        }
+        M->popMatrix();
+    }
+    coral2Tex->unbind(0);
+}
+
+void drawSand(shared_ptr<MatrixStack> &M, Vector2i &gridLL, Vector2i &gridUR, float scale) {
+    sandTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(0, fadeTexPhongProg);
+    for (int i = gridLL(0); i < gridUR(0); i++) {
+        for (int j = gridLL(1); j < gridUR(1); j++) {
+            M->pushMatrix();
+            M->translate(Vector3f(2.0f * scale * (float)i, 0.0f, 2.0f * scale * (float)j));
+            M->scale(scale);
+            glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+            plane->draw(fadeTexPhongProg);
+            M->popMatrix();
+        }
+    }
+    sandTex->unbind(0);
+}
+
+void drawSurface(shared_ptr<MatrixStack> &M, Vector2i &gridLL, Vector2i &gridUR, float scale) {
+    glDisable(GL_CULL_FACE);
+    surfaceTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(1, fadeTexPhongProg);
+    for (int i = gridLL(0); i < gridUR(0); i++) {
+        for (int j = gridLL(1); j < gridUR(1); j++) {
+            M->pushMatrix();
+            M->translate(Vector3f(2.0f * scale * (float)i, 30.0f, 2.0f * scale * (float)j));
+            M->scale(scale);
+            glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+            plane->draw(fadeTexPhongProg);
+            M->popMatrix();
+        }
+    }
+    glEnable(GL_CULL_FACE);
+    surfaceTex->unbind(0);
+}
+
+void drawScenery(shared_ptr<MatrixStack> &M) {
+    drawRocks(M);
+    
+    Vector2i gridLL(-20, -20 );
+    Vector2i gridUR(20, 20);
+    float scale = 10.0f;
+    drawSand(M, gridLL, gridUR, scale);
+    drawSurface(M, gridLL, gridUR, scale);
+}
+
+void drawChimChiminy(shared_ptr<MatrixStack> &M) {
+    wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(5, fadeTexPhongProg);
+    M->pushMatrix();
+    M->translate(Vector3f(0, 2, 0));
+    M->rotate(M_PI, Vector3f(1, 0, 0));
+    M->scale(8);
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    wreck->draw(fadeTexPhongProg);
+    M->popMatrix();
+    wreckTex->unbind(0);
+}
+
+void drawBeaufighter(shared_ptr<MatrixStack> &M) {
+    wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(5, fadeTexPhongProg);
+    M->pushMatrix();
+    M->translate(Vector3f(0, 2, 0));
+    M->rotate(M_PI / 2, Vector3f(1, 0, 0));
+    M->scale(8);
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    wreck->draw(fadeTexPhongProg);
+    M->popMatrix();
+    wreckTex->unbind(0);
+}
+
+void drawSeaweeds(shared_ptr<MatrixStack> &M) {
+    // Draw seaweeds
+    setMaterial(7, fadeWavePhongProg);
+    for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
+        M->pushMatrix();
+        M->multMatrix(seaweedTransforms[i]);
+        glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        seaweed->draw(fadeWavePhongProg);
+        M->popMatrix();
+    }
+}
+
+void drawBubbles(shared_ptr<MatrixStack> &M, double t) {
+    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
+    setMaterial(6, fadePhongProg);
+    for (unsigned int i = 0; i < bubbles.size(); i++) {
+        bubbles[i].draw(fadePhongProg, t);
+    }
+}
+
+/* Draw objects that:
+ 1. Are textured objs
+ 2. Need blinn-phong lighting
+ 3. Fade in the distance
+ */
+void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+                         Vector3f &lightPos, Vector3f &lightCol) {
+    fadeTexPhongProg->bind();
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
+    
+    drawNautilus(M);
+    //    drawSubmarine(M);
+    //    drawScenery(M);
+    //    drawChimChiminy(M);
+    //    drawBeaufighter(M);
+    
+    fadeTexPhongProg->unbind();
+}
+
+/* Draw objects that:
+ 1. Are waving objs
+ 2. Need blinn-phong lighting
+ 3. Fade in the distance
+ */
+void drawWavingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+                       Vector3f &lightPos,Vector3f &lightCol, double t) {
+    fadeWavePhongProg->bind();
+    glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
+    glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
+    glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
+    
+    drawSeaweeds(M);
+    
+    fadeWavePhongProg->unbind();
+}
+
+/* Draw objects that:
+ 1. Are standard objs
+ 2. Need blinn-phong lighting
+ 3. Fade in the distance
+ */
+void drawFadingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+                       Vector3f &lightPos,Vector3f &lightCol, double t) {
+    fadePhongProg->bind();
+    glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+    
+    drawBubbles(M, t);
+    fadePhongProg->unbind();
+}
+
 static void render()
 {
-   double t = glfwGetTime();
-   // Press p to pause and play path
-   if(!keyToggles['p']) {
-      iter = ((iter + 1) % iterations); // Make sure iterations is set correctly!
-      setCamPos6dof(camPosVec[iter], camDirVec[iter]);
-      // std::cout << "pos: " << camPosVec[iter].transpose() << std::endl;
-      // std::cout << "dir: " << camDirVec[iter].transpose() << std::endl;
-   }
-   // Switch to camArr instead of camPosVec to follow PRM path!
-   // Make sure to comment in code to initialize camArr
-
-   // Get current frame buffer size.
-   // Important for retina displays!
-   glfwGetFramebufferSize(window, &actualW, &actualH);
-   glViewport(0, 0, actualW, actualH);
-
-   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-   // Clear framebuffer.
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   float aspect = actualW/(float)actualH;
-
-   // Define the light position in the world.
-   Vector3f lightPos(200.0f, 200.0f, -200.0f);
-   Vector3f lightCol(1.0f, 1.0f, 1.0f);
-
-   // Create the matrix stacks - please leave these alone for now
-   auto P = make_shared<MatrixStack>();
-   auto V = make_shared<MatrixStack>();
-   auto M = make_shared<MatrixStack>();
-
-   // Apply initial matrix transforms
-   P->pushMatrix();
+    double t = glfwGetTime();
+    // Press p to pause and play path
+    if(!keyToggles['p']) {
+        iter = ((iter + 1) % iterations); // Make sure iterations is set correctly!
+        setCamPos6dof(camPosVec[iter], camDirVec[iter]);
+        // std::cout << "pos: " << camPosVec[iter].transpose() << std::endl;
+        // std::cout << "dir: " << camDirVec[iter].transpose() << std::endl;
+    }
+    // Switch to camArr instead of camPosVec to follow PRM path!
+    // Make sure to comment in code to initialize camArr
+    
+    // Get current frame buffer size.
+    // Important for retina displays!
+    glfwGetFramebufferSize(window, &actualW, &actualH);
+    glViewport(0, 0, actualW, actualH);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+    // Clear framebuffer.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
+    float aspect = actualW/(float)actualH;
+    
+    // Define the light position in the world.
+    Vector3f lightPos(200.0f, 200.0f, -200.0f);
+    Vector3f lightCol(1.0f, 1.0f, 1.0f);
+    
+    // Create the matrix stacks - please leave these alone for now
+    auto P = make_shared<MatrixStack>();
+    auto V = make_shared<MatrixStack>();
+    auto M = make_shared<MatrixStack>();
+    
+    // Apply initial matrix transforms
+    P->pushMatrix();
     P->perspective(45.0f, aspect, 0.01f, viewDist);
-
-   // Create the view matrix
-   V->pushMatrix();
-   Vector3d lookAtPos = camPos + camDir;
-   V->lookAt(camPos.cast<float>(), lookAtPos.cast<float>(), Vector3f(0.0f, 1.0f, 0.0f));
-
-   // Push this frame
-   M->pushMatrix();
-
-//   /* Draw objects that:
-//   1. Are textured objs
-//   2. Need blinn-phong lighting
-//   3. Fade in the distance
-//   */
-//   fadeTexPhongProg->bind();
-//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-//   glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-//   glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-//   glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-//   glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
-//
-//
-//   // Draw the nautilus's
-//   rustedMetalTex0->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(3, fadeTexPhongProg);
-//   for (int i = 0; i < (int)nautilusTransforms.size(); i++) {
-//      M->pushMatrix();
-//      M->multMatrix(nautilusTransforms[i]);
-//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//      nautilus->draw(fadeTexPhongProg);
-//      M->popMatrix();
-//   }
-//   rustedMetalTex0->unbind(0);
-//
-//   // Draw the submarine's
-//   rustedMetalTex1->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(4, fadeTexPhongProg);
-//   for (int i = 0; i < (int)submarineTransforms.size(); i++) {
-//      M->pushMatrix();
-//      M->multMatrix(submarineTransforms[i]);
-//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//      submarine->draw(fadeTexPhongProg);
-//      M->popMatrix();
-//   }
-//   rustedMetalTex1->unbind(0);
-//
-//   // Draw the rocks:
-//   coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(2, fadeTexPhongProg);
-//   for (int i = 0; i < (int)rockTransforms.size(); i++) {
-//      // Switch textures at the 1 / 3 and 2 / 3 marks.
-//      if (i == (int)rockTransforms.size() / 3) {
-//         coral0Tex->unbind(0);
-//         coral1Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//      }
-//      else if (i == 2 * (int)rockTransforms.size() / 3) {
-//         coral1Tex->unbind(0);
-//         coral2Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//      }
-//
-//      M->pushMatrix();
-//      M->multMatrix(rockTransforms[i]);
-//      glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//      switch (i % 4) {
-//      case 0:
-//         rock0->draw(fadeTexPhongProg);
-//         break;
-//      case 1:
-//         rock1->draw(fadeTexPhongProg);
-//         break;
-//      case 2:
-//         rock2->draw(fadeTexPhongProg);
-//         break;
-//      case 3:
-//         rock3->draw(fadeTexPhongProg);
-//         break;
-//      }
-//      M->popMatrix();
-//   }
-//   coral2Tex->unbind(0);
-//
-//   // Draw the sand.
-//   sandTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(0, fadeTexPhongProg);
-//   Vector2i gridLL(-20, -20 );
-//   Vector2i gridUR(20, 20);
-//   float scale = 10.0f;
-//   for (int i = gridLL(0); i < gridUR(0); i++) {
-//      for (int j = gridLL(1); j < gridUR(1); j++) {
-//         M->pushMatrix();
-//         M->translate(Vector3f(2.0f * scale * (float)i, 0.0f, 2.0f * scale * (float)j));
-//         M->scale(scale);
-//         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//         plane->draw(fadeTexPhongProg);
-//         M->popMatrix();
-//      }
-//   }
-//   sandTex->unbind(0);
-//
-//   // Draw the surface
-//   glDisable(GL_CULL_FACE);
-//   surfaceTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(1, fadeTexPhongProg);
-//   for (int i = gridLL(0); i < gridUR(0); i++) {
-//      for (int j = gridLL(1); j < gridUR(1); j++) {
-//         M->pushMatrix();
-//         M->translate(Vector3f(2.0f * scale * (float)i, 30.0f, 2.0f * scale * (float)j));
-//         M->scale(scale);
-//         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//         plane->draw(fadeTexPhongProg);
-//         M->popMatrix();
-//      }
-//   }
-//   glEnable(GL_CULL_FACE);
-//   surfaceTex->unbind(0);
-//   // fadeTexPhongProg->unbind();
-//
-//   // Draw the wreck- chimChiminy
-//   wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-//   setTextureMaterial(5, fadeTexPhongProg);
-//   M->pushMatrix();
-//   M->translate(Vector3f(0, 2, 0));
-//   M->rotate(M_PI, Vector3f(1, 0, 0));
-//   M->scale(8);
-//   glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//   wreck->draw(fadeTexPhongProg);
-//   M->popMatrix();
-//   wreckTex->unbind(0);
-//   fadeTexPhongProg->unbind();
-
-   // Draw the wreck- beaufighter
-   // wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-   // setTextureMaterial(5, fadeTexPhongProg);
-   // M->pushMatrix();
-   // M->translate(Vector3f(0, 2, 0));
-   // M->rotate(M_PI / 2, Vector3f(1, 0, 0));
-   // M->scale(8);
-   // glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-   // wreck->draw(fadeTexPhongProg);
-   // M->popMatrix();
-   // wreckTex->unbind(0);
-   // fadeTexPhongProg->unbind();
-
-//   /* Draw objects that:
-//   1. Are waving objs
-//   2. Need blinn-phong lighting
-//   3. Fade in the distance
-//   */
-//   fadeWavePhongProg->bind();
-//   glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-//   glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-//   glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-//   glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-//   glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-//   glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
-//   glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
-//   glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
-//
-//   // Draw seaweeds
-//   setMaterial(7, fadeWavePhongProg);
-//   for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
-//      M->pushMatrix();
-//      M->multMatrix(seaweedTransforms[i]);
-//      glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//      seaweed->draw(fadeWavePhongProg);
-//      M->popMatrix();
-//   }
-//   fadeWavePhongProg->unbind();
-//
-//   /* Draw objects that:
-//   1. Are sharks
-//   2. Need blinn-phong lighting
-//   3. Fade in the distance
-//   */
-//   // Draw the sharks using a special shader that lightens their underbellies.
-//   fadeSharkPhongProg->bind();
-//   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-//   glUniformMatrix4fv(fadeSharkPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-//   glUniform3f(fadeSharkPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-//   glUniform3f(fadeSharkPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-//   glUniform3f(fadeSharkPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-//   glUniform1f(fadeSharkPhongProg->getUniform("viewDist"), viewDist);
-//   glUniform1f(fadeSharkPhongProg->getUniform("baseAlpha"), 1.0f);
-//
-//   // Draw sharks.
-//   setMaterial(5, fadePhongProg);
-//   // for (unsigned int i = 0; i < sharks.size(); i++) {
-//     //  sharks[i].draw(fadeSharkPhongProg, t);
-//   // }
-//   shark.draw(fadeSharkPhongProg, t);
-//
-//   fadeSharkPhongProg->unbind();
-
-//   /* Draw objects that:
-//   1. Are standard objs
-//   2. Need blinn-phong lighting
-//   3. Fade in the distance
-//   */
-//   fadePhongProg->bind();
-//   glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-//   glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-//   glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//   glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-//   glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-//   glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-//   glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
-//   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
-//
-//   // Draw Nefertiti
-//   // M->pushMatrix();
-//   // M->translate(Vector3f(0.0f, 1.5f, 2.0f));
-//   // M->rotate((float)M_PI * 0.33f, Vector3f(-1.0f, 0.0f, 1.0f));
-//   // M->rotate((float)-M_PI * 0.5f, Vector3f(1.0f, 0.0f, 0.0f));
-//   // M->scale(10.0f);
-//   // glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-//   // setMaterial(2, fadePhongProg);
-//   // nefertiti->draw(fadePhongProg);
-//   // M->popMatrix();
-//
-//   // Draw bubbles.
-//   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
-//   setMaterial(6, fadePhongProg);
-//   for (unsigned int i = 0; i < bubbles.size(); i++) {
-//      bubbles[i].draw(fadePhongProg, t);
-//   }
-//    fadePhongProg->unbind();
-//
+    
+    // Create the view matrix
+    V->pushMatrix();
+    Vector3d lookAtPos = camPos + camDir;
+    V->lookAt(camPos.cast<float>(), lookAtPos.cast<float>(), Vector3f(0.0f, 1.0f, 0.0f));
+    
+    // Push this frame
+    M->pushMatrix();
+    
+    drawTexturedObjects(P, V, M, lightPos, lightCol);
+    drawWavingObjects(P, V, M, lightPos, lightCol, t);
+    drawFadingObjects(P, V, M, lightPos, lightCol, t);
+    
+    //   /* Draw objects that:
+    //   1. Are standard objs
+    //   2. Need blinn-phong lighting
+    //   3. Fade in the distance
+    //   */
+    //   fadePhongProg->bind();
+    //   glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    //   glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    //   glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    //   glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    //   glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    //   glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    //   glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+    //   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+    //
+    //   // Draw bubbles.
+    //   glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
+    //   setMaterial(6, fadePhongProg);
+    //   for (unsigned int i = 0; i < bubbles.size(); i++) {
+    //      bubbles[i].draw(fadePhongProg, t);
+    //   }
+    //    fadePhongProg->unbind();
+    //
     
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
@@ -1322,7 +1349,10 @@ static void render()
     for (int i = 0; i < path_indices.size(); i++) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
         
-        //for (int j = 0; j < )
+        //        printf("Printing out current ibo\n");
+        //        for (int j = 0; j < length_indices[i]; j++) {
+        //            printf("%d\n", IndxBuffObjs[i][j]);
+        //        }
         //        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
         glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
@@ -1331,137 +1361,137 @@ static void render()
             cout << "error 1097: " << error << endl;
         }
     }
-
+    
     glDisableVertexAttribArray(0);
     
-   fadePhongProg->unbind();
-   
-   // Pop matrix stacks.
-   M->popMatrix();
-   V->popMatrix();
-   P->popMatrix();
-
-
-   // Read directly from framebuffer- super slow, don't do
-   // vector<unsigned char> pixels(actualW * actualH * 3);
-   // glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
-   // GLfloat pixels[width * height];
-   // glGetBufferSubData(GL_COPY_WRITE_BUFFER, 0, width * height,
-   //  &pixels[0]);
-   // glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, width * height * sizeof(GL_BYTE),
-   //  &pixels[0]);
-   // glBufferData(GL_STATIC_READ)
-   // glGetNamedBufferSubData(0, 0, width * height, &pixels[0]);
-   //   for (int i = 0; i < width; i++) {
-   //    for (int j = 0; j < height; j++) {
-   //       cout << (int)pixels[i * j + j] << " " 
-   //        << (int)pixels[i * j + j + 1] << " " 
-   //        << (int)pixels[i * j + j + 2] << ", ";
-   //    }
-   //    cout << endl << endl;
-   //   }
-   // cout << endl;
-
-
-   // Zoe's code to write to texture
-   /*
-   //regardless unbind the FBO   
-   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-   // Clear framebuffer.
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   //draw textured quad
-   tex_prog->bind();
-   glActiveTexture(GL_TEXTURE0);
-   glBindTexture(GL_TEXTURE_2D, renderTexture);
-   glUniform1i(tex_prog->getUniform("texBuf"), 0);
-
-   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-   glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
-
-   glEnableVertexAttribArray(0);
-   glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
-   glDrawArrays(GL_TRIANGLES, 0, 6);
-   glDisableVertexAttribArray(0);
-   tex_prog->unbind();
-   */
+    fadePhongProg->unbind();
+    
+    // Pop matrix stacks.
+    M->popMatrix();
+    V->popMatrix();
+    P->popMatrix();
+    
+    
+    // Read directly from framebuffer- super slow, don't do
+    // vector<unsigned char> pixels(actualW * actualH * 3);
+    // glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, &pixels[0]);
+    // GLfloat pixels[width * height];
+    // glGetBufferSubData(GL_COPY_WRITE_BUFFER, 0, width * height,
+    //  &pixels[0]);
+    // glGetBufferSubData(GL_PIXEL_PACK_BUFFER, 0, width * height * sizeof(GL_BYTE),
+    //  &pixels[0]);
+    // glBufferData(GL_STATIC_READ)
+    // glGetNamedBufferSubData(0, 0, width * height, &pixels[0]);
+    //   for (int i = 0; i < width; i++) {
+    //    for (int j = 0; j < height; j++) {
+    //       cout << (int)pixels[i * j + j] << " "
+    //        << (int)pixels[i * j + j + 1] << " "
+    //        << (int)pixels[i * j + j + 2] << ", ";
+    //    }
+    //    cout << endl << endl;
+    //   }
+    // cout << endl;
+    
+    
+    // Zoe's code to write to texture
+    /*
+     //regardless unbind the FBO
+     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+     
+     // Clear framebuffer.
+     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+     
+     //draw textured quad
+     tex_prog->bind();
+     glActiveTexture(GL_TEXTURE0);
+     glBindTexture(GL_TEXTURE_2D, renderTexture);
+     glUniform1i(tex_prog->getUniform("texBuf"), 0);
+     
+     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
+     
+     glEnableVertexAttribArray(0);
+     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+     glDrawArrays(GL_TRIANGLES, 0, 6);
+     glDisableVertexAttribArray(0);
+     tex_prog->unbind();
+     */
 }
 
 int main(int argc, char **argv)
 {
-   if(argc < 2) {
-      cout << "Please specify the resource directory." << endl;
-      return 0;
-   }
-   RESOURCE_DIR = argv[1] + string("/");
-
-   // Set error callback.
-   glfwSetErrorCallback(error_callback);
-   // Initialize the library.
-   if(!glfwInit()) {
-      return -1;
-   }
-
-   //request the highest possible version of OGL - important for mac
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-
-   // Create a windowed mode window and its OpenGL context.
-   // window = glfwCreateWindow(1200, 800, "Keenan M. Reimer", NULL, NULL);
-   window = glfwCreateWindow(512, 384, "ICEX 2016", NULL, NULL);
-   if(!window) {
-      glfwTerminate();
-      return -1;
-   }
-   // Make the window's context current.
-   glfwMakeContextCurrent(window);
-   // Initialize GLEW.
-   glewExperimental = true;
-   if(glewInit() != GLEW_OK) {
-      cerr << "Failed to initialize GLEW" << endl;
-      return -1;
-   }
-   //weird bootstrap of glGetError
-   glGetError();
-   cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
-   cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
-
-   // Set vsync.
-   glfwSwapInterval(1);
-   // Set keyboard callback.
-   glfwSetKeyCallback(window, key_callback);
-   // Set char callback.
-   glfwSetCharCallback(window, char_callback);
-   //set the mouse call back
-   glfwSetMouseButtonCallback(window, mouse_callback);
-   // Set cursor position callback.
-   glfwSetCursorPosCallback(window, cursor_pos_callback);
-   //set the window resize call back
-   glfwSetFramebufferSizeCallback(window, resize_callback);
-
-   // Initialize scene. Note geometry initialized in init now
-   init();
-
-   initCamPath();
-
-   // Loop until the user closes the window.
-   while(!glfwWindowShouldClose(window)) {
-      // Render scene.
-       render();
-      // Swap front and back buffers.
-      glfwSwapBuffers(window);
-      // Poll for and process events.
-      glfwPollEvents();
-   }
-
-   writeOutTex();
-
-   // Quit program.
-   glfwDestroyWindow(window);
-   glfwTerminate();
-   return 0;
+    if(argc < 2) {
+        cout << "Please specify the resource directory." << endl;
+        return 0;
+    }
+    RESOURCE_DIR = argv[1] + string("/");
+    
+    // Set error callback.
+    glfwSetErrorCallback(error_callback);
+    // Initialize the library.
+    if(!glfwInit()) {
+        return -1;
+    }
+    
+    //request the highest possible version of OGL - important for mac
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    
+    // Create a windowed mode window and its OpenGL context.
+    // window = glfwCreateWindow(1200, 800, "Keenan M. Reimer", NULL, NULL);
+    window = glfwCreateWindow(512, 384, "ICEX 2016", NULL, NULL);
+    if(!window) {
+        glfwTerminate();
+        return -1;
+    }
+    // Make the window's context current.
+    glfwMakeContextCurrent(window);
+    // Initialize GLEW.
+    glewExperimental = true;
+    if(glewInit() != GLEW_OK) {
+        cerr << "Failed to initialize GLEW" << endl;
+        return -1;
+    }
+    //weird bootstrap of glGetError
+    glGetError();
+    cout << "OpenGL version: " << glGetString(GL_VERSION) << endl;
+    cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+    
+    // Set vsync.
+    glfwSwapInterval(1);
+    // Set keyboard callback.
+    glfwSetKeyCallback(window, key_callback);
+    // Set char callback.
+    glfwSetCharCallback(window, char_callback);
+    //set the mouse call back
+    glfwSetMouseButtonCallback(window, mouse_callback);
+    // Set cursor position callback.
+    glfwSetCursorPosCallback(window, cursor_pos_callback);
+    //set the window resize call back
+    glfwSetFramebufferSizeCallback(window, resize_callback);
+    
+    // Initialize scene. Note geometry initialized in init now
+    init();
+    
+    initCamPath();
+    
+    // Loop until the user closes the window.
+    while(!glfwWindowShouldClose(window)) {
+        // Render scene.
+        render();
+        // Swap front and back buffers.
+        glfwSwapBuffers(window);
+        // Poll for and process events.
+        glfwPollEvents();
+    }
+    
+    writeOutTex();
+    
+    // Quit program.
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
 }
