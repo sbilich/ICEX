@@ -1,7 +1,7 @@
-/* Lab 5 base code - transforms using local matrix functions 
-   to be written by students - 
-   CPE 471 Cal Poly Z. Wood + S. Sueda
-*/
+/* Lab 5 base code - transforms using local matrix functions
+ to be written by students -
+ CPE 471 Cal Poly Z. Wood + S. Sueda
+ */
 #include <iostream>
 #include <stdio.h>
 #include <string>
@@ -85,71 +85,7 @@ int actualW, actualH;
 // Vector of camera positions and directions, initialized at the beginning
 vector<Vector3d> camPosVec;
 vector<Vector3d> camDirVec;
-// Sara's path manually entered in
-// Vector3d camArr[62] = {
-// Vector3d(-16.00, 3.00, -16.00),
-// Vector3d(-14.49, 3.00, -15.08),
-// Vector3d(-15.81, 3.00, -13.96),
-// Vector3d(-14.85, 3.00, -12.92),
-// Vector3d(-15.79, 3.00, -11.88),
-// Vector3d(-14.23, 3.00, -9.62),
-// Vector3d(-13.28, 3.00, -7.36),
-// Vector3d(-12.85, 3.00, -6.94),
-// Vector3d(-12.13, 3.00, -4.77),
-// Vector3d(-11.04, 3.00, -4.74),
-// Vector3d(-9.28, 3.00, -4.28),
-// Vector3d(-8.95, 3.00, -4.05),
-// Vector3d(-8.59, 3.00, -4.60),
-// Vector3d(-6.57, 3.00, -4.35),
-// Vector3d(-4.33, 3.00, -5.41),
-// Vector3d(-3.73, 3.00, -4.70),
-// Vector3d(-1.15, 3.00, -4.67),
-// Vector3d(-0.84, 3.00, -2.06),
-// Vector3d(0.70, 3.00, -2.04),
-// Vector3d(1.55, 3.00, -3.02),
-// Vector3d(0.36, 3.00, -1.90),
-// Vector3d(1.74, 3.00, -0.56),
-// Vector3d(2.81, 3.00, 0.08),
-// Vector3d(2.22, 3.00, 1.07),
-// Vector3d(3.83, 3.00, 2.13),
-// Vector3d(4.93, 3.00, 3.69),
-// Vector3d(5.50, 3.00, 3.34),
-// Vector3d(4.88, 3.00, 3.83),
-// Vector3d(3.94, 3.00, 4.27),
-// Vector3d(2.67, 3.00, 5.91),
-// Vector3d(3.31, 3.00, 6.80),
-// Vector3d(4.64, 3.00, 7.78),
-// Vector3d(2.68, 3.00, 8.45),
-// Vector3d(3.03, 3.00, 9.84),
-// Vector3d(1.48, 3.00, 10.30),
-// Vector3d(1.98, 3.00, 10.93),
-// Vector3d(2.43, 3.00, 11.67),
-// Vector3d(3.74, 3.00, 12.38),
-// Vector3d(4.86, 3.00, 12.93),
-// Vector3d(5.91, 3.00, 13.55),
-// Vector3d(6.30, 3.00, 12.24),
-// Vector3d(7.66, 3.00, 11.72),
-// Vector3d(8.24, 3.00, 11.21),
-// Vector3d(9.17, 3.00, 11.93),
-// Vector3d(10.90, 3.00, 12.60),
-// Vector3d(9.02, 3.00, 13.36),
-// Vector3d(10.76, 3.00, 14.17),
-// Vector3d(11.74, 3.00, 14.41),
-// Vector3d(12.98, 3.00, 15.50),
-// Vector3d(12.21, 3.00, 13.56),
-// Vector3d(13.47, 3.00, 12.54),
-// Vector3d(14.12, 3.00, 11.33),
-// Vector3d(15.13, 3.00, 12.40),
-// Vector3d(15.19, 3.00, 13.37),
-// Vector3d(15.14, 3.00, 14.69),
-// Vector3d(13.46, 3.00, 14.17),
-// Vector3d(14.61, 3.00, 15.77),
-// Vector3d(13.19, 3.00, 14.69),
-// Vector3d(13.55, 3.00, 15.48),
-// Vector3d(14.43, 3.00, 15.23),
-// Vector3d(15.11, 3.00, 15.32),
-// Vector3d(15.99, 3.00, 15.96)
-// };
+
 // framebuffer and texture to render to
 GLuint framebuffer, renderTexture, depthRenderBuffer;
 
@@ -238,9 +174,9 @@ GLuint *IndxBuffObjs;
 
 //for local copy of framebuffer
 typedef struct RGB {
-  GLubyte r;
-  GLubyte g;
-  GLubyte b;
+    GLubyte r;
+    GLubyte g;
+    GLubyte b;
 } RGB;
 
 GLubyte myFrame[1024*768*4];
@@ -248,360 +184,360 @@ GLubyte myFrame[1024*768*4];
 Image *outImage;
 
 void setCamPos6dof(Vector3d pos, Vector3d dir) {
-   camPos = pos;
-   camDir = dir;
+    camPos = pos;
+    camDir = dir;
 }
 
 void setCamPos3dof(Vector3d pos) {
-   camPos = pos;
+    camPos = pos;
 }
 
 // Initializes arrays to circular path around Nefertiti head
 void initCamPath() {
-   double radius = 15;
-   double dirDelta = (2 * M_PI) / iterations;
-   double offset = M_PI;
-
-   for (int i = 0; i < iterations; i++) {
-      double theta = i * dirDelta;
-      camPosVec.push_back(Vector3d(radius * cos(theta), 3, radius * sin(theta)));
-      camDirVec.push_back(Vector3d(cos(offset + theta), 0, -sin(theta)));
-   }
-   
-   setCamPos6dof(camPosVec[0], camDirVec[0]);
+    double radius = 15;
+    double dirDelta = (2 * M_PI) / iterations;
+    double offset = M_PI;
+    
+    for (int i = 0; i < iterations; i++) {
+        double theta = i * dirDelta;
+        camPosVec.push_back(Vector3d(radius * cos(theta), 3, radius * sin(theta)));
+        camDirVec.push_back(Vector3d(cos(offset + theta), 0, -sin(theta)));
+    }
+    
+    setCamPos6dof(camPosVec[0], camDirVec[0]);
 }
 
 // Zoe's code to write out texytre to .tga image
 void writeOutTex() {
-  int idx;
-
-  //dumb conversion right now
-  color_t pix;
-  for (int i=0; i < actualW; i++) {
-      for (int j=0; j < actualH; j++) {
-         idx = (j*actualW+i)*4;
-         pix.r = myFrame[idx+0];
-         pix.g = myFrame[idx+1];
-         pix.b = myFrame[idx+2];
-         outImage->pixel(i, j, pix);
-         // cout << (int)myFrame[idx+0] << " " << endl;
-     }
-   }
-  outImage->WriteTga((char *)"out_texture.tga", true);
+    int idx;
+    
+    //dumb conversion right now
+    color_t pix;
+    for (int i=0; i < actualW; i++) {
+        for (int j=0; j < actualH; j++) {
+            idx = (j*actualW+i)*4;
+            pix.r = myFrame[idx+0];
+            pix.g = myFrame[idx+1];
+            pix.b = myFrame[idx+2];
+            outImage->pixel(i, j, pix);
+            // cout << (int)myFrame[idx+0] << " " << endl;
+        }
+    }
+    outImage->WriteTga((char *)"out_texture.tga", true);
 }
 
 // Fill the world with underwater objects
 static void generate() {
-   // Clear out the existing world
-   // sharks.clear();
-   bubbles.clear();
-   rockTransforms.clear();
-   seaweedTransforms.clear();
-   nautilusTransforms.clear();
-   submarineTransforms.clear();
-
-   // Initialize random sharks around Nefertiti
-   Vector2f sR(8.0f, 15.0f);
-   Vector2f sH(1.0f, 25.0f);
-   Vector2f sS(-3.0f, 3.0f);
-   float s = randRangef(sS(0), sS(1));
-   if (abs(s) < 1.0f) {
-      s = s / abs(s);
-   }
-   float h = randRangef(sH(0), sH(1));
-   float r = randRangef(sR(0), sR(1));
-
-   shark = Shark(sharkShapes);
-   shark.setHeight(h);
-   shark.setRadius(r);
-   shark.setSpeed(s);
-
-   // Initialize random bubbles
-   int numBubbles = 600;
-   bubblesShapes = make_shared<BubblesShapes>(RESOURCE_DIR);
-   for (int i = 0; i < numBubbles; i++) {
-      Bubbles bubble = Bubbles(bubblesShapes);
-      bubbles.push_back(bubble);
-   }
-
-   // Initialize random rock transforms
-   int numRock0 = 500;
-   Vector2f rSC(3.0f, 10.0f);
-   Vector2f rR(30.0f, 300.0f);
-   for (int i = 0; i < numRock0; i++) {
-      auto E = make_shared<MatrixStack>();
-      E->loadIdentity();
-      float sc = randRangef(rSC(0), rSC(1));
-      float r = randRangef(rR(0), rR(1));
-      float rot = randRangef(0.0f, 2.0f * (float)M_PI);
-      float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-
-      E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-      E->rotate(rot, Vector3f(0.0f, 1.0f, 0.0f));
-      E->scale(sc);
-
-      rockTransforms.push_back(E->topMatrix());
-   }
-
-   // Initialize random seaweed transforms
-   int numSeaweed = 100;
-   Vector2f swSC(5.0f, 10.0f);
-   Vector2f swR(15.0f, 300.0f);
-   Vector2f swDR(0.0f, 0.001f);
-   Vector2f swDensity(3.0f, 10.0f);
-   for (int i = 0; i < numSeaweed; i++) {
-      float r = randRangef(swR(0), swR(1));
-      float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-
-      int num = (int)randRangef(swDensity(0), swDensity(1));
-      for (int j = 0; j < num; j++) {
-         float sc = randRangef(swSC(0), swSC(1));
-         float rot = randRangef(0.0f, 2.0f * (float)M_PI);
-         float dR = randRangef(swDR(0), swDR(1));
-         float dTheta = randRangef(0.0f, 2.0f * (float)M_PI);
-
-         auto E = make_shared<MatrixStack>();
-         E->loadIdentity();
-         E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-         E->translate((Vector3f(dR * cos(dTheta), 0.0f, dR * sin(dTheta))));
-         E->rotate(rot, Vector3f(0.0f, 1.0f, 0.0f));
-         E->scale(sc);
-         seaweedTransforms.push_back(E->topMatrix());
-      }
-   }
-
-   // Initialize random nautilus transforms
-   int numNaut = 3;
-   Vector2f nR(100.0f, 300.0f);
-   Vector2f nXRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
-   for (int i = 0; i < numNaut; i++) {
-      auto E = make_shared<MatrixStack>();
-      E->loadIdentity();
-      float r = randRangef(nR(0), nR(1));
-      float xRot = randRangef(nXRot(0), nXRot(1));
-      float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
-      float zRot = randRangef(0.0f, 2.0f * (float)M_PI);
-      float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-
-      E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-      E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
-      E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
-      E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
-      E->scale(50.0f);
-
-      nautilusTransforms.push_back(E->topMatrix());
-   }
-
-   // Initialize random submarine transforms
-   int numSub = 2;
-   Vector2f subR(75.0f, 300.0f);
-   Vector2f subZRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
-   for (int i = 0; i < numSub; i++) {
-      auto E = make_shared<MatrixStack>();
-      E->loadIdentity();
-      float r = randRangef(subR(0), subR(1));
-      float xRot = randRangef(0.0f, 2.0f * (float)M_PI);
-      float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
-      float zRot = randRangef(subZRot(0), subZRot(1));
-      float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-
-      E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-      E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
-      E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
-      E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
-      E->scale(25.0f);
-
-      submarineTransforms.push_back(E->topMatrix());
-   }
+    // Clear out the existing world
+    // sharks.clear();
+    bubbles.clear();
+    rockTransforms.clear();
+    seaweedTransforms.clear();
+    nautilusTransforms.clear();
+    submarineTransforms.clear();
+    
+    // Initialize random sharks around Nefertiti
+    Vector2f sR(8.0f, 15.0f);
+    Vector2f sH(1.0f, 25.0f);
+    Vector2f sS(-3.0f, 3.0f);
+    float s = randRangef(sS(0), sS(1));
+    if (abs(s) < 1.0f) {
+        s = s / abs(s);
+    }
+    float h = randRangef(sH(0), sH(1));
+    float r = randRangef(sR(0), sR(1));
+    
+    shark = Shark(sharkShapes);
+    shark.setHeight(h);
+    shark.setRadius(r);
+    shark.setSpeed(s);
+    
+    // Initialize random bubbles
+    int numBubbles = 600;
+    bubblesShapes = make_shared<BubblesShapes>(RESOURCE_DIR);
+    for (int i = 0; i < numBubbles; i++) {
+        Bubbles bubble = Bubbles(bubblesShapes);
+        bubbles.push_back(bubble);
+    }
+    
+    // Initialize random rock transforms
+    int numRock0 = 500;
+    Vector2f rSC(3.0f, 10.0f);
+    Vector2f rR(30.0f, 300.0f);
+    for (int i = 0; i < numRock0; i++) {
+        auto E = make_shared<MatrixStack>();
+        E->loadIdentity();
+        float sc = randRangef(rSC(0), rSC(1));
+        float r = randRangef(rR(0), rR(1));
+        float rot = randRangef(0.0f, 2.0f * (float)M_PI);
+        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
+        
+        E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
+        E->rotate(rot, Vector3f(0.0f, 1.0f, 0.0f));
+        E->scale(sc);
+        
+        rockTransforms.push_back(E->topMatrix());
+    }
+    
+    // Initialize random seaweed transforms
+    int numSeaweed = 100;
+    Vector2f swSC(5.0f, 10.0f);
+    Vector2f swR(15.0f, 300.0f);
+    Vector2f swDR(0.0f, 0.001f);
+    Vector2f swDensity(3.0f, 10.0f);
+    for (int i = 0; i < numSeaweed; i++) {
+        float r = randRangef(swR(0), swR(1));
+        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
+        
+        int num = (int)randRangef(swDensity(0), swDensity(1));
+        for (int j = 0; j < num; j++) {
+            float sc = randRangef(swSC(0), swSC(1));
+            float rot = randRangef(0.0f, 2.0f * (float)M_PI);
+            float dR = randRangef(swDR(0), swDR(1));
+            float dTheta = randRangef(0.0f, 2.0f * (float)M_PI);
+            
+            auto E = make_shared<MatrixStack>();
+            E->loadIdentity();
+            E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
+            E->translate((Vector3f(dR * cos(dTheta), 0.0f, dR * sin(dTheta))));
+            E->rotate(rot, Vector3f(0.0f, 1.0f, 0.0f));
+            E->scale(sc);
+            seaweedTransforms.push_back(E->topMatrix());
+        }
+    }
+    
+    // Initialize random nautilus transforms
+    int numNaut = 3;
+    Vector2f nR(100.0f, 300.0f);
+    Vector2f nXRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
+    for (int i = 0; i < numNaut; i++) {
+        auto E = make_shared<MatrixStack>();
+        E->loadIdentity();
+        float r = randRangef(nR(0), nR(1));
+        float xRot = randRangef(nXRot(0), nXRot(1));
+        float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
+        float zRot = randRangef(0.0f, 2.0f * (float)M_PI);
+        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
+        
+        E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
+        E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
+        E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
+        E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
+        E->scale(50.0f);
+        
+        nautilusTransforms.push_back(E->topMatrix());
+    }
+    
+    // Initialize random submarine transforms
+    int numSub = 2;
+    Vector2f subR(75.0f, 300.0f);
+    Vector2f subZRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
+    for (int i = 0; i < numSub; i++) {
+        auto E = make_shared<MatrixStack>();
+        E->loadIdentity();
+        float r = randRangef(subR(0), subR(1));
+        float xRot = randRangef(0.0f, 2.0f * (float)M_PI);
+        float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
+        float zRot = randRangef(subZRot(0), subZRot(1));
+        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
+        
+        E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
+        E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
+        E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
+        E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
+        E->scale(25.0f);
+        
+        submarineTransforms.push_back(E->topMatrix());
+    }
 }
 
 static void error_callback(int error, const char *description)
 {
-   cerr << description << endl;
+    cerr << description << endl;
 }
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-   if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-      glfwSetWindowShouldClose(window, GL_TRUE);
-   }
-
-   // Move the camera around
-   else if (key == GLFW_KEY_W) {
-     camPos += speed * camDir;
-   }
-   else if (key == GLFW_KEY_A) {
-     Vector3d camCross = camDir.cross(Vector3d(0.0, 1.0, 0.0)).normalized();
-     camPos -= camCross;
-   }
-   else if (key == GLFW_KEY_S) {
-     camPos -= speed * camDir;
-   }
-   else if (key == GLFW_KEY_D) {
-     Vector3d camCross = camDir.cross(Vector3d(0.0, 1.0, 0.0)).normalized();
-     camPos += camCross;
-   }
-   else if (key == GLFW_KEY_SPACE) {
-     camPos += speed * Vector3d(0.0, 1.0, 0.0);
-   }
-   // Re-generate the world
-   else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
-      generate();
-   }
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+    
+    // Move the camera around
+    else if (key == GLFW_KEY_W) {
+        camPos += speed * camDir;
+    }
+    else if (key == GLFW_KEY_A) {
+        Vector3d camCross = camDir.cross(Vector3d(0.0, 1.0, 0.0)).normalized();
+        camPos -= camCross;
+    }
+    else if (key == GLFW_KEY_S) {
+        camPos -= speed * camDir;
+    }
+    else if (key == GLFW_KEY_D) {
+        Vector3d camCross = camDir.cross(Vector3d(0.0, 1.0, 0.0)).normalized();
+        camPos += camCross;
+    }
+    else if (key == GLFW_KEY_SPACE) {
+        camPos += speed * Vector3d(0.0, 1.0, 0.0);
+    }
+    // Re-generate the world
+    else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+        generate();
+    }
 }
 
 static void char_callback(GLFWwindow *window, unsigned int key)
 {
-   keyToggles[key] = !keyToggles[key];
+    keyToggles[key] = !keyToggles[key];
 }
 
 
 static void mouse_callback(GLFWwindow *window, int button, int action, int mods)
 {
-   double posX, posY;
-   if (action == GLFW_PRESS) {
-     glfwGetCursorPos(window, &posX, &posY);
-     mouse[0] = posX;
-     mouse[1] = posY;
-   }
+    double posX, posY;
+    if (action == GLFW_PRESS) {
+        glfwGetCursorPos(window, &posX, &posY);
+        mouse[0] = posX;
+        mouse[1] = posY;
+    }
 }
 
 static void cursor_pos_callback(GLFWwindow * window, double xpos, double ypos) {
-   int mouseAction = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-   if (mouseAction == GLFW_PRESS) {
-      double posX, posY;
-      glfwGetCursorPos(window, &posX, &posY);
-      double dX = posX - mouse[0];
-      double dY = posY - mouse[1];
-
-      int width, height;
-      glfwGetFramebufferSize(window, &width, &height);
-
-      // Calculate the camera angles
-      alpha -= 0.5 * M_PI * dY / (double)width;
-      beta += M_PI * dX / (double)height;
-
-      // Clamp alpha between +/- 85 degrees.
-      if (alpha > alphaClamp) {
-        alpha = alphaClamp;
-      }
-      else if (alpha < -alphaClamp) {
-        alpha = -alphaClamp;
-      }
-
-      // Calculate the new camera direction
-      camDir(0) = cos(alpha) * cos(beta);
-      camDir(1) = sin(alpha);
-      camDir(2) = cos(alpha) * cos(0.5 * M_PI - beta);
-
-      // Record the x and y positions
-      mouse[0] = posX;
-      mouse[1] = posY;
-   }
+    int mouseAction = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    if (mouseAction == GLFW_PRESS) {
+        double posX, posY;
+        glfwGetCursorPos(window, &posX, &posY);
+        double dX = posX - mouse[0];
+        double dY = posY - mouse[1];
+        
+        int width, height;
+        glfwGetFramebufferSize(window, &width, &height);
+        
+        // Calculate the camera angles
+        alpha -= 0.5 * M_PI * dY / (double)width;
+        beta += M_PI * dX / (double)height;
+        
+        // Clamp alpha between +/- 85 degrees.
+        if (alpha > alphaClamp) {
+            alpha = alphaClamp;
+        }
+        else if (alpha < -alphaClamp) {
+            alpha = -alphaClamp;
+        }
+        
+        // Calculate the new camera direction
+        camDir(0) = cos(alpha) * cos(beta);
+        camDir(1) = sin(alpha);
+        camDir(2) = cos(alpha) * cos(0.5 * M_PI - beta);
+        
+        // Record the x and y positions
+        mouse[0] = posX;
+        mouse[1] = posY;
+    }
 }
 
 static void resize_callback(GLFWwindow *window, int width, int height) {
-   g_width = width;
-   g_height = height;
-   glViewport(0, 0, width, height);
+    g_width = width;
+    g_height = height;
+    glViewport(0, 0, width, height);
 }
 
 // Set materials to objs
 void setMaterial(int i, shared_ptr<Program> prog) {
-
-  switch (i) {
-  case 0: //shiny blue plastic
-    glUniform3f(prog->getUniform("matAmb"), 0.002f, 0.004f, 0.02f);
-    glUniform3f(prog->getUniform("matDif"), 0.0f, 0.16f, 0.9f);
-    glUniform3f(prog->getUniform("matSpec"), 0.14f, 0.2f, 0.8f);
-    glUniform1f(prog->getUniform("matShine"), 120.0f);
-    break;
-  case 1: // flat grey
-    glUniform3f(prog->getUniform("matAmb"), 0.013f, 0.013f, 0.014f);
-    glUniform3f(prog->getUniform("matDif"), 0.3f, 0.3f, 0.4f);
-    glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.4f);
-    glUniform1f(prog->getUniform("matShine"), 4.0f);
-    break;
-  case 2: // brass
-      glUniform3f(prog->getUniform("matAmb"), 2.0f * 0.03294f, 2.0f * 0.02235f, 2.0f * 0.002745f);
-      glUniform3f(prog->getUniform("matDif"), 0.7804f, 0.5686f, 0.11373f);
-      glUniform3f(prog->getUniform("matSpec"), 0.9922f, 0.941176f, 0.80784f);
-      glUniform1f(prog->getUniform("matShine"), 27.9f);
-      break;
-  case 3: // copper
-    glUniform3f(prog->getUniform("matAmb"), 0.01913f, 0.00735f, 0.00225f);
-    glUniform3f(prog->getUniform("matDif"), 0.7038f, 0.27048f, 0.0828f);
-    glUniform3f(prog->getUniform("matSpec"), 0.257f, 0.1376f, 0.08601f);
-    glUniform1f(prog->getUniform("matShine"), 12.8f);
-    break;
-  case 4: // aquamarine
-    glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.026f, 0.013f);
-    glUniform3f(prog->getUniform("matDif"), 0.0f, 0.8f, 0.7f);
-    glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.2f, 0.99f);
-    glUniform1f(prog->getUniform("matShine"), 20.0f);
-    break;
-  case 5: // shark
-     glUniform3f(prog->getUniform("matAmb"), 0.25098f / 3, 0.192157f / 3, 0.282353f / 3);
-     glUniform3f(prog->getUniform("matDif"), 0.25098f, 0.192157f, 0.282353f);
-     glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-     glUniform1f(prog->getUniform("matShine"), 5.0);
-     break;
-  case 6: // bubbles
-     glUniform3f(prog->getUniform("matAmb"), 0.9f, 0.9f, 0.9f);
-     glUniform3f(prog->getUniform("matDif"), 0.0f, 0.0f, 0.0f);
-     glUniform3f(prog->getUniform("matSpec"), 0.1f, 0.1f, 0.1f);
-     glUniform1f(prog->getUniform("matShine"), 20.0f);
-     break;
-  case 7: // seaweed
-     glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.2f, 0.1f);
-     glUniform3f(prog->getUniform("matDif"), 0.0f, 0.4f, 0.0f);
-     glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
-     glUniform1f(prog->getUniform("matShine"), 20.0f);
-     break;
-  }
+    
+    switch (i) {
+        case 0: //shiny blue plastic
+            glUniform3f(prog->getUniform("matAmb"), 0.002f, 0.004f, 0.02f);
+            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.16f, 0.9f);
+            glUniform3f(prog->getUniform("matSpec"), 0.14f, 0.2f, 0.8f);
+            glUniform1f(prog->getUniform("matShine"), 120.0f);
+            break;
+        case 1: // flat grey
+            glUniform3f(prog->getUniform("matAmb"), 0.013f, 0.013f, 0.014f);
+            glUniform3f(prog->getUniform("matDif"), 0.3f, 0.3f, 0.4f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.4f);
+            glUniform1f(prog->getUniform("matShine"), 4.0f);
+            break;
+        case 2: // brass
+            glUniform3f(prog->getUniform("matAmb"), 2.0f * 0.03294f, 2.0f * 0.02235f, 2.0f * 0.002745f);
+            glUniform3f(prog->getUniform("matDif"), 0.7804f, 0.5686f, 0.11373f);
+            glUniform3f(prog->getUniform("matSpec"), 0.9922f, 0.941176f, 0.80784f);
+            glUniform1f(prog->getUniform("matShine"), 27.9f);
+            break;
+        case 3: // copper
+            glUniform3f(prog->getUniform("matAmb"), 0.01913f, 0.00735f, 0.00225f);
+            glUniform3f(prog->getUniform("matDif"), 0.7038f, 0.27048f, 0.0828f);
+            glUniform3f(prog->getUniform("matSpec"), 0.257f, 0.1376f, 0.08601f);
+            glUniform1f(prog->getUniform("matShine"), 12.8f);
+            break;
+        case 4: // aquamarine
+            glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.026f, 0.013f);
+            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.8f, 0.7f);
+            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.2f, 0.99f);
+            glUniform1f(prog->getUniform("matShine"), 20.0f);
+            break;
+        case 5: // shark
+            glUniform3f(prog->getUniform("matAmb"), 0.25098f / 3, 0.192157f / 3, 0.282353f / 3);
+            glUniform3f(prog->getUniform("matDif"), 0.25098f, 0.192157f, 0.282353f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matShine"), 5.0);
+            break;
+        case 6: // bubbles
+            glUniform3f(prog->getUniform("matAmb"), 0.9f, 0.9f, 0.9f);
+            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.0f, 0.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.1f, 0.1f, 0.1f);
+            glUniform1f(prog->getUniform("matShine"), 20.0f);
+            break;
+        case 7: // seaweed
+            glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.2f, 0.1f);
+            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.4f, 0.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
+            glUniform1f(prog->getUniform("matShine"), 20.0f);
+            break;
+    }
 }
 
 // Set materials to textured objs
 void setTextureMaterial(int i, shared_ptr<Program> prog) {
-
-   switch (i) {
-   case 0: // sand
-      glUniform1f(prog->getUniform("matAmb"), 0.25f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-      glUniform1f(prog->getUniform("matShine"), 5.0f);
-      break;
-   case 1: // water surface
-      glUniform1f(prog->getUniform("matAmb"), 0.25f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 2.0f, 2.0f, 2.0f);
-      glUniform1f(prog->getUniform("matShine"), 10.0f);
-      break;
-   case 2: // coral
-      glUniform1f(prog->getUniform("matAmb"), 0.25f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-      glUniform1f(prog->getUniform("matShine"), 5.0f);
-      break;
-   case 3: // nautilus
-      glUniform1f(prog->getUniform("matAmb"), 0.25f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-      glUniform1f(prog->getUniform("matShine"), 45.0f);
-      break;
-   case 4: // submarine
-      glUniform1f(prog->getUniform("matAmb"), 0.25f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.45f, 0.45f);
-      glUniform1f(prog->getUniform("matShine"), 45.0f);
-      break;
-   case 5: // ICEX wreck
-      glUniform1f(prog->getUniform("matAmb"), 1.0f);
-      glUniform1f(prog->getUniform("matDif"), 1.0f);
-      glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
-      glUniform1f(prog->getUniform("matShine"), 1.0f);
-      break;
-   }
+    
+    switch (i) {
+        case 0: // sand
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
+            break;
+        case 1: // water surface
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 2.0f, 2.0f, 2.0f);
+            glUniform1f(prog->getUniform("matShine"), 10.0f);
+            break;
+        case 2: // coral
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
+            break;
+        case 3: // nautilus
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matShine"), 45.0f);
+            break;
+        case 4: // submarine
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.45f, 0.45f);
+            glUniform1f(prog->getUniform("matShine"), 45.0f);
+            break;
+        case 5: // ICEX wreck
+            glUniform1f(prog->getUniform("matAmb"), 1.0f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
+            glUniform1f(prog->getUniform("matShine"), 1.0f);
+            break;
+    }
 }
 
 // MARK: Parses through "path.txt" and "roadmap.txt" to get the possible paths' indices and all possible vertices.
@@ -613,7 +549,7 @@ void loadRoadMapFromMotionPlanFiles() {
     
     fgets(num, 10, infoFile);
     GLuint numVert = atoi(num);
-//    printf("numVert is %d\n", numVert);
+    //    printf("numVert is %d\n", numVert);
     fclose(infoFile);
     
     const string vertex_file_name = string(RESOURCE_DIR + "roadmap.txt");
@@ -648,7 +584,7 @@ void loadRoadMapFromMotionPlanFiles() {
         
         GLuint numIndices = 0;
         fscanf(indexFile, " number of indices: %d", &numIndices);
-//        printf("num indices is %d\n", numIndices);
+        //        printf("num indices is %d\n", numIndices);
         
         GLuint *indexArr = new GLuint[numIndices];
         length_indices.push_back(numIndices);
@@ -676,154 +612,88 @@ void loadRoadMapFromMotionPlanFiles() {
 
 static void init()
 {
-   GLSL::checkVersion();
+    GLSL::checkVersion();
     
-   // Initialize camera variables
-   viewDist = 300.0f;
-   speed = 0.75;
-   alpha = 0.0;
-   alphaClamp = 85.0 * M_PI / 180.0;
-   beta = 0.5 * M_PI;
-   camPos = Vector3d(0.0, 1.0, -15.0);
-   camDir = Vector3d(0.0, 0.0, 1.0);
-
-   // Set background color.
-//   glClearColor(.051f, .553f, .875f, 1.0f); // blue background
-   glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
-   // Enable z-buffer test.
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-   glEnable(GL_CULL_FACE);
-   glCullFace(GL_BACK);
-   glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
-   // MARK: Init additions for ICEX
-   // Generate framebuffer, texture, and depth renderbuffer
-   glfwGetFramebufferSize(window, &actualW, &actualH);
-
-   glGenFramebuffers(1, &framebuffer);
-   glGenTextures(1, &renderTexture);
-   glGenRenderbuffers(1, &depthRenderBuffer);
-   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-   glBindTexture(GL_TEXTURE_2D, depthRenderBuffer);
-   glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
-   
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, actualW, actualH, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
-
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-   glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
-   // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
+    // Initialize camera variables
+    viewDist = 300.0f;
+    speed = 0.75;
+    alpha = 0.0;
+    alphaClamp = 85.0 * M_PI / 180.0;
+    beta = 0.5 * M_PI;
+    camPos = Vector3d(0.0, 1.0, -15.0);
+    camDir = Vector3d(0.0, 0.0, 1.0);
     
-   glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, actualW, actualH);
-   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
+    // Set background color.
+    //   glClearColor(.051f, .553f, .875f, 1.0f); // blue background
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
+    // Enable z-buffer test.
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     
-   GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
-   glDrawBuffers(1, DrawBuffers);
-
-   if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-      cout << "framebuffer error" << endl;
-   }
-
-   // Now set up a simple quad for rendering FBO
-   glGenVertexArrays(1, &quad_VertexArrayID);
-   glBindVertexArray(quad_VertexArrayID);
-
-   static const GLfloat g_quad_vertex_buffer_data[] = {
-    -1.0f, -1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    -1.0f,  1.0f, 0.0f,
-    -1.0f,  1.0f, 0.0f,
-    1.0f, -1.0f, 0.0f,
-    1.0f,  1.0f, 0.0f,
-   };
+    // MARK: Init additions for ICEX
+    // Generate framebuffer, texture, and depth renderbuffer
+    glfwGetFramebufferSize(window, &actualW, &actualH);
     
-   glGenBuffers(1, &quad_vertexbuffer);
-   glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-   loadRoadMapFromMotionPlanFiles();
+    glGenFramebuffers(1, &framebuffer);
+    glGenTextures(1, &renderTexture);
+    glGenRenderbuffers(1, &depthRenderBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+    glBindTexture(GL_TEXTURE_2D, depthRenderBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthRenderBuffer);
+    
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, actualW, actualH, 0, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
+    
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, actualW, actualH);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
+    
+    GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+    glDrawBuffers(1, DrawBuffers);
+    
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        cout << "framebuffer error" << endl;
+    }
+    
+    // Now set up a simple quad for rendering FBO
+    glGenVertexArrays(1, &quad_VertexArrayID);
+    glBindVertexArray(quad_VertexArrayID);
+    
+    static const GLfloat g_quad_vertex_buffer_data[] = {
+        -1.0f, -1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+        1.0f, -1.0f, 0.0f,
+        1.0f,  1.0f, 0.0f,
+    };
+    
+    glGenBuffers(1, &quad_vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+    
+    loadRoadMapFromMotionPlanFiles();
     //loadRoadMapFromCSVFiles();
     
-   // Setup vao for rendering path lines
-   glGenVertexArrays(1, &path_VertexArrayID);
-   glBindVertexArray(path_VertexArrayID);
-
-//   // First few points of path for testing purposes
-//   static const GLfloat g_path_vertex_buffer_data[] = {
-//       -16.00, 3.00, -16.00,
-//       -14.49, 3.00, -15.08,
-//       -15.81, 3.00, -13.96,
-//       -14.85, 3.00, -12.92,
-//       -15.79, 3.00, -11.88,
-//       -14.23, 3.00, -9.62,
-//       -13.28, 3.00, -7.36,
-//       -12.85, 3.00, -6.94,
-//       -12.13, 3.00, -4.77,
-//       -11.04, 3.00, -4.74,
-//       -9.28, 3.00, -4.28,
-//       -8.95, 3.00, -4.05,
-//       -8.59, 3.00, -4.60,
-//       -6.57, 3.00, -4.35,
-//       -4.33, 3.00, -5.41,
-//       -3.73, 3.00, -4.70,
-//       -1.15, 3.00, -4.67,
-//       -0.84, 3.00, -2.06,
-//       0.70, 3.00, -2.04,
-//       1.55, 3.00, -3.02,
-//       0.36, 3.00, -1.90,
-//       1.74, 3.00, -0.56,
-//       2.81, 3.00, 0.08,
-//       2.22, 3.00, 1.07,
-//       3.83, 3.00, 2.13,
-//       4.93, 3.00, 3.69,
-//       5.50, 3.00, 3.34,
-//       4.88, 3.00, 3.83,
-//       3.94, 3.00, 4.27,
-//       2.67, 3.00, 5.91,
-//       3.31, 3.00, 6.80,
-//       4.64, 3.00, 7.78,
-//       2.68, 3.00, 8.45,
-//       3.03, 3.00, 9.84,
-//       1.48, 3.00, 10.30,
-//       1.98, 3.00, 10.93,
-//       2.43, 3.00, 11.67,
-//       3.74, 3.00, 12.38,
-//       4.86, 3.00, 12.93,
-//       5.91, 3.00, 13.55,
-//       6.30, 3.00, 12.24,
-//       7.66, 3.00, 11.72,
-//       8.24, 3.00, 11.21,
-//       9.17, 3.00, 11.93,
-//       10.90, 3.00, 12.60,
-//       9.02, 3.00, 13.36,
-//       10.76, 3.00, 14.17,
-//       11.74, 3.00, 14.41,
-//       12.98, 3.00, 15.50,
-//       12.21, 3.00, 13.56,
-//       13.47, 3.00, 12.54,
-//       14.12, 3.00, 11.33,
-//       15.13, 3.00, 12.40,
-//       15.19, 3.00, 13.37,
-//       15.14, 3.00, 14.69,
-//       13.46, 3.00, 14.17,
-//       14.61, 3.00, 15.77,
-//       13.19, 3.00, 14.69,
-//       13.55, 3.00, 15.48,
-//       14.43, 3.00, 15.23,
-//       15.11, 3.00, 15.32,
-//       15.99, 3.00, 15.96
-//   };
+    // Setup vao for rendering path lines
+    glGenVertexArrays(1, &path_VertexArrayID);
+    glBindVertexArray(path_VertexArrayID);
     
     // setup vbo for rendering path lines
     glGenBuffers(1, &path_vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
-   //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
     
     IndxBuffObjs = new GLuint[path_indices.size()];
     
@@ -832,208 +702,208 @@ static void init()
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(path_indices[i]), path_indices[i], GL_STATIC_DRAW);
     }
-
-   // End of added for ICEX
-
-   //to write out
-   outImage = new Image(actualW, actualH);
-
-   tex_prog = make_shared<Program>();
-   tex_prog->setVerbose(true);
-   tex_prog->setShaderNames(RESOURCE_DIR + "pass_vert.glsl", RESOURCE_DIR + "tex_frag.glsl");
-   tex_prog->init();
-   tex_prog->addUniform("texBuf");
-   tex_prog->addAttribute("vertPos");
-
-   // Initialize plane for textures.
-   plane = make_shared<Shape>();
-   plane->loadMesh(RESOURCE_DIR + "plane.obj");
-   plane->resize();
-   plane->init();
-
-   // Initialize nefertiti.
-   nefertiti = make_shared<Shape>();
-   nefertiti->loadMesh(RESOURCE_DIR + "Nefertiti-10K.obj");
-   nefertiti->resize();
-   nefertiti->init();
-
-   // Initialize rock 0.
-   rock0 = make_shared<Shape>();
-   rock0->loadMesh(RESOURCE_DIR + "Boulder1.obj");
-   rock0->resize();
-   rock0->init();
-
-   // Initialize rock 1.
-   rock1 = make_shared<Shape>();
-   rock1->loadMesh(RESOURCE_DIR + "Boulder2.obj");
-   rock1->resize();
-   rock1->init();
-
-   // Initialize rock 2.
-   rock2 = make_shared<Shape>();
-   rock2->loadMesh(RESOURCE_DIR + "Boulder3.obj");
-   rock2->resize();
-   rock2->init();
-
-   // Initialize rock 3.
-   rock3 = make_shared<Shape>();
-   rock3->loadMesh(RESOURCE_DIR + "rockArc.obj");
-   rock3->resize();
-   rock3->moveToGround();
-   rock3->init();
-
-   // Initialize seaweed.
-   seaweed = make_shared<Shape>();
-   seaweed->loadMesh(RESOURCE_DIR + "seaweed.obj");
-   seaweed->resize();
-   seaweed->moveToGround();
-   seaweed->init();
-
-   // Initialize nautilus.
-   nautilus = make_shared<Shape>();
-   nautilus->loadMesh(RESOURCE_DIR + "nautilus.obj");
-   nautilus->resize();
-   nautilus->init();
-
-   // Initialize submarine.
-   submarine = make_shared<Shape>();
-   submarine->loadMesh(RESOURCE_DIR + "submarine.obj");
-   submarine->resize();
-   submarine->init();
-
-   // Initialize ICEX wreck
-   wreck = make_shared<Shape>();
-   wreck->loadMesh(RESOURCE_DIR + "chimney.obj");
-   wreck->resize();
-   wreck->init();
-
-   // Initialize sand texture.
-   sandTex = make_shared<Texture>();
-   sandTex->setFilename(RESOURCE_DIR + "sandLight.png");
-   sandTex->init();
-
-   // Initialize ocean surface texture.
-   surfaceTex = make_shared<Texture>();
-   surfaceTex->setFilename(RESOURCE_DIR + "oceanSurface.png");
-   surfaceTex->init();
-
-   // Initialize coral texture 0.
-   coral0Tex = make_shared<Texture>();
-   coral0Tex->setFilename(RESOURCE_DIR + "coral0.png");
-   coral0Tex->init();
-
-   // Initialize coral texture 1.
-   coral1Tex = make_shared<Texture>();
-   coral1Tex->setFilename(RESOURCE_DIR + "coral1.png");
-   coral1Tex->init();
-
-   // Initialize coral texture 2.
-   coral2Tex = make_shared<Texture>();
-   coral2Tex->setFilename(RESOURCE_DIR + "coral2.png");
-   coral2Tex->init();
-
-   // Initialize first rust texture.
-   rustedMetalTex0 = make_shared<Texture>();
-   rustedMetalTex0->setFilename(RESOURCE_DIR + "rustedMetal0.png");
-   rustedMetalTex0->init();
-
-   // Initialize second rust texture.
-   rustedMetalTex1 = make_shared<Texture>();
-   rustedMetalTex1->setFilename(RESOURCE_DIR + "rustedMetal1.png");
-   rustedMetalTex1->init();
-
-   // Initalize the ICEX wreck texture
-   wreckTex = make_shared<Texture>();
-   wreckTex->setFilename(RESOURCE_DIR + "chimney.jpg");
-   wreckTex->init();
-
-   // Initialize shark shapes.
-   sharkShapes = make_shared<SharkShapes>(RESOURCE_DIR);
-
-   // Generate the world
-   generate();
-
-   // Initialize the fading blinn-phong program
-   fadePhongProg = make_shared<Program>();
-   fadePhongProg->setVerbose(true);
-   fadePhongProg->setShaderNames(RESOURCE_DIR + "fading_phong_vert.glsl", RESOURCE_DIR + "fading_phong_frag.glsl");
-   fadePhongProg->init();
-   fadePhongProg->addUniform("P");
-   fadePhongProg->addUniform("V");
-   fadePhongProg->addUniform("M");
-   fadePhongProg->addUniform("camPos");
-   fadePhongProg->addUniform("lightPos");
-   fadePhongProg->addUniform("lightCol");
-   fadePhongProg->addUniform("viewDist");
-   fadePhongProg->addUniform("matAmb");
-   fadePhongProg->addUniform("matDif");
-   fadePhongProg->addUniform("matSpec");
-   fadePhongProg->addUniform("matShine");
-   fadePhongProg->addUniform("baseAlpha");
-   fadePhongProg->addAttribute("vertPos");
-   fadePhongProg->addAttribute("vertNor");
-
-   // Initialize the fading shark blinn-phong program
-   fadeSharkPhongProg = make_shared<Program>();
-   fadeSharkPhongProg->setVerbose(true);
-   fadeSharkPhongProg->setShaderNames(RESOURCE_DIR + "fading_shark_phong_vert.glsl", RESOURCE_DIR + "fading_shark_phong_frag.glsl");
-   fadeSharkPhongProg->init();
-   fadeSharkPhongProg->addUniform("P");
-   fadeSharkPhongProg->addUniform("V");
-   fadeSharkPhongProg->addUniform("M");
-   fadeSharkPhongProg->addUniform("camPos");
-   fadeSharkPhongProg->addUniform("lightPos");
-   fadeSharkPhongProg->addUniform("lightCol");
-   fadeSharkPhongProg->addUniform("viewDist");
-   fadeSharkPhongProg->addUniform("matAmb");
-   fadeSharkPhongProg->addUniform("matDif");
-   fadeSharkPhongProg->addUniform("matSpec");
-   fadeSharkPhongProg->addUniform("matShine");
-   fadeSharkPhongProg->addUniform("baseAlpha");
-   fadeSharkPhongProg->addAttribute("vertPos");
-   fadeSharkPhongProg->addAttribute("vertNor");
-
-   // Initialize the fading, textured, blinn-phong program
-   fadeTexPhongProg = make_shared<Program>();
-   fadeTexPhongProg->setVerbose(true);
-   fadeTexPhongProg->setShaderNames(RESOURCE_DIR + "fading_tex_phong_vert.glsl", RESOURCE_DIR + "fading_tex_phong_frag.glsl");
-   fadeTexPhongProg->init();
-   fadeTexPhongProg->addUniform("P");
-   fadeTexPhongProg->addUniform("V");
-   fadeTexPhongProg->addUniform("M");
-   fadeTexPhongProg->addUniform("camPos");
-   fadeTexPhongProg->addUniform("lightPos");
-   fadeTexPhongProg->addUniform("lightCol");
-   fadeTexPhongProg->addUniform("viewDist");
-   fadeTexPhongProg->addUniform("matAmb");
-   fadeTexPhongProg->addUniform("matDif");
-   fadeTexPhongProg->addUniform("matSpec");
-   fadeTexPhongProg->addUniform("matShine");
-   fadeTexPhongProg->addUniform("texture0");
-   fadeTexPhongProg->addAttribute("vertPos");
-   fadeTexPhongProg->addAttribute("vertNor");
-   fadeTexPhongProg->addAttribute("vertTex");
-
-   // Initialize the fading, waving, blinn-phong program
-   fadeWavePhongProg = make_shared<Program>();
-   fadeWavePhongProg->setVerbose(true);
-   fadeWavePhongProg->setShaderNames(RESOURCE_DIR + "fading_waving_phong_vert.glsl", RESOURCE_DIR + "fading_waving_phong_frag.glsl");
-   fadeWavePhongProg->init();
-   fadeWavePhongProg->addUniform("P");
-   fadeWavePhongProg->addUniform("V");
-   fadeWavePhongProg->addUniform("M");
-   fadeWavePhongProg->addUniform("camPos");
-   fadeWavePhongProg->addUniform("lightPos");
-   fadeWavePhongProg->addUniform("lightCol");
-   fadeWavePhongProg->addUniform("viewDist");
-   fadeWavePhongProg->addUniform("matAmb");
-   fadeWavePhongProg->addUniform("matDif");
-   fadeWavePhongProg->addUniform("matSpec");
-   fadeWavePhongProg->addUniform("matShine");
-   fadeWavePhongProg->addUniform("t");
-   fadeWavePhongProg->addUniform("wave");
-   fadeWavePhongProg->addAttribute("vertPos");
-   fadeWavePhongProg->addAttribute("vertNor");
+    
+    // End of added for ICEX
+    
+    //to write out
+    outImage = new Image(actualW, actualH);
+    
+    tex_prog = make_shared<Program>();
+    tex_prog->setVerbose(true);
+    tex_prog->setShaderNames(RESOURCE_DIR + "pass_vert.glsl", RESOURCE_DIR + "tex_frag.glsl");
+    tex_prog->init();
+    tex_prog->addUniform("texBuf");
+    tex_prog->addAttribute("vertPos");
+    
+    // Initialize plane for textures.
+    plane = make_shared<Shape>();
+    plane->loadMesh(RESOURCE_DIR + "plane.obj");
+    plane->resize();
+    plane->init();
+    
+    // Initialize nefertiti.
+    nefertiti = make_shared<Shape>();
+    nefertiti->loadMesh(RESOURCE_DIR + "Nefertiti-10K.obj");
+    nefertiti->resize();
+    nefertiti->init();
+    
+    // Initialize rock 0.
+    rock0 = make_shared<Shape>();
+    rock0->loadMesh(RESOURCE_DIR + "Boulder1.obj");
+    rock0->resize();
+    rock0->init();
+    
+    // Initialize rock 1.
+    rock1 = make_shared<Shape>();
+    rock1->loadMesh(RESOURCE_DIR + "Boulder2.obj");
+    rock1->resize();
+    rock1->init();
+    
+    // Initialize rock 2.
+    rock2 = make_shared<Shape>();
+    rock2->loadMesh(RESOURCE_DIR + "Boulder3.obj");
+    rock2->resize();
+    rock2->init();
+    
+    // Initialize rock 3.
+    rock3 = make_shared<Shape>();
+    rock3->loadMesh(RESOURCE_DIR + "rockArc.obj");
+    rock3->resize();
+    rock3->moveToGround();
+    rock3->init();
+    
+    // Initialize seaweed.
+    seaweed = make_shared<Shape>();
+    seaweed->loadMesh(RESOURCE_DIR + "seaweed.obj");
+    seaweed->resize();
+    seaweed->moveToGround();
+    seaweed->init();
+    
+    // Initialize nautilus.
+    nautilus = make_shared<Shape>();
+    nautilus->loadMesh(RESOURCE_DIR + "nautilus.obj");
+    nautilus->resize();
+    nautilus->init();
+    
+    // Initialize submarine.
+    submarine = make_shared<Shape>();
+    submarine->loadMesh(RESOURCE_DIR + "submarine.obj");
+    submarine->resize();
+    submarine->init();
+    
+    // Initialize ICEX wreck
+    wreck = make_shared<Shape>();
+    wreck->loadMesh(RESOURCE_DIR + "chimney.obj");
+    wreck->resize();
+    wreck->init();
+    
+    // Initialize sand texture.
+    sandTex = make_shared<Texture>();
+    sandTex->setFilename(RESOURCE_DIR + "sandLight.png");
+    sandTex->init();
+    
+    // Initialize ocean surface texture.
+    surfaceTex = make_shared<Texture>();
+    surfaceTex->setFilename(RESOURCE_DIR + "oceanSurface.png");
+    surfaceTex->init();
+    
+    // Initialize coral texture 0.
+    coral0Tex = make_shared<Texture>();
+    coral0Tex->setFilename(RESOURCE_DIR + "coral0.png");
+    coral0Tex->init();
+    
+    // Initialize coral texture 1.
+    coral1Tex = make_shared<Texture>();
+    coral1Tex->setFilename(RESOURCE_DIR + "coral1.png");
+    coral1Tex->init();
+    
+    // Initialize coral texture 2.
+    coral2Tex = make_shared<Texture>();
+    coral2Tex->setFilename(RESOURCE_DIR + "coral2.png");
+    coral2Tex->init();
+    
+    // Initialize first rust texture.
+    rustedMetalTex0 = make_shared<Texture>();
+    rustedMetalTex0->setFilename(RESOURCE_DIR + "rustedMetal0.png");
+    rustedMetalTex0->init();
+    
+    // Initialize second rust texture.
+    rustedMetalTex1 = make_shared<Texture>();
+    rustedMetalTex1->setFilename(RESOURCE_DIR + "rustedMetal1.png");
+    rustedMetalTex1->init();
+    
+    // Initalize the ICEX wreck texture
+    wreckTex = make_shared<Texture>();
+    wreckTex->setFilename(RESOURCE_DIR + "chimney.jpg");
+    wreckTex->init();
+    
+    // Initialize shark shapes.
+    sharkShapes = make_shared<SharkShapes>(RESOURCE_DIR);
+    
+    // Generate the world
+    generate();
+    
+    // Initialize the fading blinn-phong program
+    fadePhongProg = make_shared<Program>();
+    fadePhongProg->setVerbose(true);
+    fadePhongProg->setShaderNames(RESOURCE_DIR + "fading_phong_vert.glsl", RESOURCE_DIR + "fading_phong_frag.glsl");
+    fadePhongProg->init();
+    fadePhongProg->addUniform("P");
+    fadePhongProg->addUniform("V");
+    fadePhongProg->addUniform("M");
+    fadePhongProg->addUniform("camPos");
+    fadePhongProg->addUniform("lightPos");
+    fadePhongProg->addUniform("lightCol");
+    fadePhongProg->addUniform("viewDist");
+    fadePhongProg->addUniform("matAmb");
+    fadePhongProg->addUniform("matDif");
+    fadePhongProg->addUniform("matSpec");
+    fadePhongProg->addUniform("matShine");
+    fadePhongProg->addUniform("baseAlpha");
+    fadePhongProg->addAttribute("vertPos");
+    fadePhongProg->addAttribute("vertNor");
+    
+    // Initialize the fading shark blinn-phong program
+    fadeSharkPhongProg = make_shared<Program>();
+    fadeSharkPhongProg->setVerbose(true);
+    fadeSharkPhongProg->setShaderNames(RESOURCE_DIR + "fading_shark_phong_vert.glsl", RESOURCE_DIR + "fading_shark_phong_frag.glsl");
+    fadeSharkPhongProg->init();
+    fadeSharkPhongProg->addUniform("P");
+    fadeSharkPhongProg->addUniform("V");
+    fadeSharkPhongProg->addUniform("M");
+    fadeSharkPhongProg->addUniform("camPos");
+    fadeSharkPhongProg->addUniform("lightPos");
+    fadeSharkPhongProg->addUniform("lightCol");
+    fadeSharkPhongProg->addUniform("viewDist");
+    fadeSharkPhongProg->addUniform("matAmb");
+    fadeSharkPhongProg->addUniform("matDif");
+    fadeSharkPhongProg->addUniform("matSpec");
+    fadeSharkPhongProg->addUniform("matShine");
+    fadeSharkPhongProg->addUniform("baseAlpha");
+    fadeSharkPhongProg->addAttribute("vertPos");
+    fadeSharkPhongProg->addAttribute("vertNor");
+    
+    // Initialize the fading, textured, blinn-phong program
+    fadeTexPhongProg = make_shared<Program>();
+    fadeTexPhongProg->setVerbose(true);
+    fadeTexPhongProg->setShaderNames(RESOURCE_DIR + "fading_tex_phong_vert.glsl", RESOURCE_DIR + "fading_tex_phong_frag.glsl");
+    fadeTexPhongProg->init();
+    fadeTexPhongProg->addUniform("P");
+    fadeTexPhongProg->addUniform("V");
+    fadeTexPhongProg->addUniform("M");
+    fadeTexPhongProg->addUniform("camPos");
+    fadeTexPhongProg->addUniform("lightPos");
+    fadeTexPhongProg->addUniform("lightCol");
+    fadeTexPhongProg->addUniform("viewDist");
+    fadeTexPhongProg->addUniform("matAmb");
+    fadeTexPhongProg->addUniform("matDif");
+    fadeTexPhongProg->addUniform("matSpec");
+    fadeTexPhongProg->addUniform("matShine");
+    fadeTexPhongProg->addUniform("texture0");
+    fadeTexPhongProg->addAttribute("vertPos");
+    fadeTexPhongProg->addAttribute("vertNor");
+    fadeTexPhongProg->addAttribute("vertTex");
+    
+    // Initialize the fading, waving, blinn-phong program
+    fadeWavePhongProg = make_shared<Program>();
+    fadeWavePhongProg->setVerbose(true);
+    fadeWavePhongProg->setShaderNames(RESOURCE_DIR + "fading_waving_phong_vert.glsl", RESOURCE_DIR + "fading_waving_phong_frag.glsl");
+    fadeWavePhongProg->init();
+    fadeWavePhongProg->addUniform("P");
+    fadeWavePhongProg->addUniform("V");
+    fadeWavePhongProg->addUniform("M");
+    fadeWavePhongProg->addUniform("camPos");
+    fadeWavePhongProg->addUniform("lightPos");
+    fadeWavePhongProg->addUniform("lightCol");
+    fadeWavePhongProg->addUniform("viewDist");
+    fadeWavePhongProg->addUniform("matAmb");
+    fadeWavePhongProg->addUniform("matDif");
+    fadeWavePhongProg->addUniform("matSpec");
+    fadeWavePhongProg->addUniform("matShine");
+    fadeWavePhongProg->addUniform("t");
+    fadeWavePhongProg->addUniform("wave");
+    fadeWavePhongProg->addAttribute("vertPos");
+    fadeWavePhongProg->addAttribute("vertNor");
 }
 
 void drawNautilus(shared_ptr<MatrixStack> &M) {
@@ -1186,6 +1056,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     drawNautilus(M);
     drawSubmarine(M);
     drawScenery(M);
+    drawIver(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
     
@@ -1198,7 +1069,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  3. Fade in the distance
  */
 void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                       Vector3f &lightPos,Vector3f &lightCol, double t) {
+                 Vector3f &lightPos,Vector3f &lightCol, double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1228,7 +1099,7 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
  3. Fade in the distance
  */
 void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                       Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1270,11 +1141,11 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     for (int i = 0; i < path_indices.size(); i++) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
         
-//        printf("Printing out current ibo\n");
-//        for (int j = 0; j < length_indices[i]; j++) {
-//            printf("%d\n", IndxBuffObjs[i][j]);
-//        }
-//        printf("length of ibo %d is %d\n", i, length_indices[i]);
+        //        printf("Printing out current ibo\n");
+        //        for (int j = 0; j < length_indices[i]; j++) {
+        //            printf("%d\n", IndxBuffObjs[i][j]);
+        //        }
+        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
         glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
         GLenum error = glGetError();
@@ -1313,19 +1184,19 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
 //    // Zoe's code to write to texture
 //     //regardless unbind the FBO
 //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     
+//
 //     // Clear framebuffer.
 //     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//     
+//
 //     //draw textured quad
 //     tex_prog->bind();
 //     glActiveTexture(GL_TEXTURE0);
 //     glBindTexture(GL_TEXTURE_2D, renderTexture);
 //     glUniform1i(tex_prog->getUniform("texBuf"), 0);
-//     
+//
 //     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 //     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
-//     
+//
 //     glEnableVertexAttribArray(0);
 //     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
 //     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
@@ -1384,7 +1255,7 @@ static void render()
     drawTexturedObjects(P, V, M, lightPos, lightCol);
     drawSeaweed(P, V, M, lightPos, lightCol, t);
     drawBubbles(P, V, M, lightPos, lightCol, t);
-    drawPaths(P, V, M, lightPos, lightCol);
+//    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
     M->popMatrix();
