@@ -1168,26 +1168,6 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
     wreckTex->unbind(0);
 }
 
-void drawSeaweeds(shared_ptr<MatrixStack> &M) {
-    // Draw seaweeds
-    setMaterial(7, fadeWavePhongProg);
-    for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
-        M->pushMatrix();
-        M->multMatrix(seaweedTransforms[i]);
-        glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-        seaweed->draw(fadeWavePhongProg);
-        M->popMatrix();
-    }
-}
-
-void drawBubbles(shared_ptr<MatrixStack> &M, double t) {
-    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
-    setMaterial(6, fadePhongProg);
-    for (unsigned int i = 0; i < bubbles.size(); i++) {
-        bubbles[i].draw(fadePhongProg, t);
-    }
-}
-
 /* Draw objects that:
  1. Are textured objs
  2. Need blinn-phong lighting
@@ -1204,8 +1184,8 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     
     drawNautilus(M);
-    //    drawSubmarine(M);
-    //    drawScenery(M);
+    drawSubmarine(M);
+    drawScenery(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
     
@@ -1217,7 +1197,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  2. Need blinn-phong lighting
  3. Fade in the distance
  */
-void drawWavingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
                        Vector3f &lightPos,Vector3f &lightCol, double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
@@ -1229,7 +1209,15 @@ void drawWavingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, s
     glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
     
-    drawSeaweeds(M);
+    // Draw seaweeds
+    setMaterial(7, fadeWavePhongProg);
+    for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
+        M->pushMatrix();
+        M->multMatrix(seaweedTransforms[i]);
+        glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        seaweed->draw(fadeWavePhongProg);
+        M->popMatrix();
+    }
     
     fadeWavePhongProg->unbind();
 }
@@ -1239,7 +1227,7 @@ void drawWavingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, s
  2. Need blinn-phong lighting
  3. Fade in the distance
  */
-void drawFadingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
                        Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
@@ -1251,7 +1239,13 @@ void drawFadingObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, s
     glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
     
-    drawBubbles(M, t);
+    // Draw Bubbles
+    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
+    setMaterial(6, fadePhongProg);
+    for (unsigned int i = 0; i < bubbles.size(); i++) {
+        bubbles[i].draw(fadePhongProg, t);
+    }
+    
     fadePhongProg->unbind();
 }
 
@@ -1276,11 +1270,11 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     for (int i = 0; i < path_indices.size(); i++) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
         
-        //        printf("Printing out current ibo\n");
-        //        for (int j = 0; j < length_indices[i]; j++) {
-        //            printf("%d\n", IndxBuffObjs[i][j]);
-        //        }
-        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
+//        printf("Printing out current ibo\n");
+//        for (int j = 0; j < length_indices[i]; j++) {
+//            printf("%d\n", IndxBuffObjs[i][j]);
+//        }
+//        printf("length of ibo %d is %d\n", i, length_indices[i]);
         
         glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
         GLenum error = glGetError();
@@ -1388,8 +1382,8 @@ static void render()
     M->pushMatrix();
     
     drawTexturedObjects(P, V, M, lightPos, lightCol);
-//    drawWavingObjects(P, V, M, lightPos, lightCol, t);
-//    drawFadingObjects(P, V, M, lightPos, lightCol, t);
+    drawSeaweed(P, V, M, lightPos, lightCol, t);
+    drawBubbles(P, V, M, lightPos, lightCol, t);
     drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
