@@ -12,7 +12,6 @@
 #include "GLSL.h"
 #include "Program.h"
 #include "Texture.h"
-#include "Shark.h"
 #include "Bubbles.h"
 #include "Utilities.h"
 #include "Image.h"
@@ -27,7 +26,6 @@ string RESOURCE_DIR = ""; // Where the resources are loaded from
 
 // GLSL programs
 shared_ptr<Program> fadePhongProg;  // Fading objs with phong lighting
-shared_ptr<Program> fadeSharkPhongProg;  // Fading sharks with phong lighting
 shared_ptr<Program> fadeTexPhongProg;  // Fading, textured objs with phong lighting
 shared_ptr<Program> fadeWavePhongProg;  // Fading, waving objs with phong lighting
 shared_ptr<Program> tex_prog;          // Render the framebuffer texture to the screen
@@ -43,9 +41,9 @@ shared_ptr<Shape> seaweed;
 shared_ptr<Shape> nautilus;
 shared_ptr<Shape> submarine;
 shared_ptr<Shape> wreck;
+shared_ptr<Shape> iver;
 
 // Wrapper classes to pass multiple objs to higher order classes
-shared_ptr<SharkShapes> sharkShapes;
 shared_ptr<BubblesShapes> bubblesShapes;
 
 // Textures
@@ -65,7 +63,6 @@ vector<Matrix4f> nautilusTransforms;
 vector<Matrix4f> submarineTransforms;
 
 // Higher order obj classes that handle some of their own movement
-Shark shark;
 vector<Bubbles> bubbles;
 
 // Camera parameters
@@ -82,6 +79,13 @@ int g_width, g_height;
 int actualW, actualH;
 
 // These things added for ICEX
+
+//// for caustics
+//const double elapse = 0.1;
+//double prevTime;
+//int curWater;
+//vector<shared_ptr<Texture> > water;
+
 // Vector of camera positions and directions, initialized at the beginning
 vector<Vector3d> camPosVec;
 vector<Vector3d> camDirVec;
@@ -167,10 +171,7 @@ vector<GLuint> length_indices;
 //    47, 48, 49
 //};
 
-
 GLuint *IndxBuffObjs;
-
-
 
 //for local copy of framebuffer
 typedef struct RGB {
@@ -229,28 +230,11 @@ void writeOutTex() {
 // Fill the world with underwater objects
 static void generate() {
     // Clear out the existing world
-    // sharks.clear();
     bubbles.clear();
     rockTransforms.clear();
     seaweedTransforms.clear();
     nautilusTransforms.clear();
     submarineTransforms.clear();
-    
-    // Initialize random sharks around Nefertiti
-    Vector2f sR(8.0f, 15.0f);
-    Vector2f sH(1.0f, 25.0f);
-    Vector2f sS(-3.0f, 3.0f);
-    float s = randRangef(sS(0), sS(1));
-    if (abs(s) < 1.0f) {
-        s = s / abs(s);
-    }
-    float h = randRangef(sH(0), sH(1));
-    float r = randRangef(sR(0), sR(1));
-    
-    shark = Shark(sharkShapes);
-    shark.setHeight(h);
-    shark.setRadius(r);
-    shark.setSpeed(s);
     
     // Initialize random bubbles
     int numBubbles = 600;
@@ -476,19 +460,19 @@ void setMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.2f, 0.99f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
-        case 5: // shark
-            glUniform3f(prog->getUniform("matAmb"), 0.25098f / 3, 0.192157f / 3, 0.282353f / 3);
-            glUniform3f(prog->getUniform("matDif"), 0.25098f, 0.192157f, 0.282353f);
-            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-            glUniform1f(prog->getUniform("matShine"), 5.0);
-            break;
-        case 6: // bubbles
+//        case 5: // shark
+//            glUniform3f(prog->getUniform("matAmb"), 0.25098f / 3, 0.192157f / 3, 0.282353f / 3);
+//            glUniform3f(prog->getUniform("matDif"), 0.25098f, 0.192157f, 0.282353f);
+//            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+//            glUniform1f(prog->getUniform("matShine"), 5.0);
+//            break;
+        case 5: // bubbles
             glUniform3f(prog->getUniform("matAmb"), 0.9f, 0.9f, 0.9f);
             glUniform3f(prog->getUniform("matDif"), 0.0f, 0.0f, 0.0f);
             glUniform3f(prog->getUniform("matSpec"), 0.1f, 0.1f, 0.1f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
-        case 7: // seaweed
+        case 6: // seaweed
             glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.2f, 0.1f);
             glUniform3f(prog->getUniform("matDif"), 0.0f, 0.4f, 0.0f);
             glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
@@ -777,6 +761,12 @@ static void init()
     wreck->resize();
     wreck->init();
     
+    // Initialize ICEX iver
+    iver = make_shared<Shape>();
+    iver->loadMesh(RESOURCE_DIR + "iver.obj");
+    iver->resize();
+    iver->init();
+    
     // Initialize sand texture.
     sandTex = make_shared<Texture>();
     sandTex->setFilename(RESOURCE_DIR + "sandLight.png");
@@ -817,9 +807,6 @@ static void init()
     wreckTex->setFilename(RESOURCE_DIR + "chimney.jpg");
     wreckTex->init();
     
-    // Initialize shark shapes.
-    sharkShapes = make_shared<SharkShapes>(RESOURCE_DIR);
-    
     // Generate the world
     generate();
     
@@ -842,26 +829,8 @@ static void init()
     fadePhongProg->addUniform("baseAlpha");
     fadePhongProg->addAttribute("vertPos");
     fadePhongProg->addAttribute("vertNor");
-    
-    // Initialize the fading shark blinn-phong program
-    fadeSharkPhongProg = make_shared<Program>();
-    fadeSharkPhongProg->setVerbose(true);
-    fadeSharkPhongProg->setShaderNames(RESOURCE_DIR + "fading_shark_phong_vert.glsl", RESOURCE_DIR + "fading_shark_phong_frag.glsl");
-    fadeSharkPhongProg->init();
-    fadeSharkPhongProg->addUniform("P");
-    fadeSharkPhongProg->addUniform("V");
-    fadeSharkPhongProg->addUniform("M");
-    fadeSharkPhongProg->addUniform("camPos");
-    fadeSharkPhongProg->addUniform("lightPos");
-    fadeSharkPhongProg->addUniform("lightCol");
-    fadeSharkPhongProg->addUniform("viewDist");
-    fadeSharkPhongProg->addUniform("matAmb");
-    fadeSharkPhongProg->addUniform("matDif");
-    fadeSharkPhongProg->addUniform("matSpec");
-    fadeSharkPhongProg->addUniform("matShine");
-    fadeSharkPhongProg->addUniform("baseAlpha");
-    fadeSharkPhongProg->addAttribute("vertPos");
-    fadeSharkPhongProg->addAttribute("vertNor");
+//    fadePhongProg->addUniform("caust_MV");
+//    fadePhongProg->addUniform("caust_P");
     
     // Initialize the fading, textured, blinn-phong program
     fadeTexPhongProg = make_shared<Program>();
@@ -883,6 +852,8 @@ static void init()
     fadeTexPhongProg->addAttribute("vertPos");
     fadeTexPhongProg->addAttribute("vertNor");
     fadeTexPhongProg->addAttribute("vertTex");
+//    fadeTexPhongProg->addUniform("caust_MV");
+//    fadeTexPhongProg->addUniform("caust_P");
     
     // Initialize the fading, waving, blinn-phong program
     fadeWavePhongProg = make_shared<Program>();
@@ -904,6 +875,19 @@ static void init()
     fadeWavePhongProg->addUniform("wave");
     fadeWavePhongProg->addAttribute("vertPos");
     fadeWavePhongProg->addAttribute("vertNor");
+//    fadeWavePhongProg->addUniform("caust_MV");
+//    fadeWavePhongProg->addUniform("caust_P");
+    
+//    for (int i = 1; i <= 11; i++) {
+//        shared_ptr<Texture> water_texture = make_shared<Texture>();
+//        string num = std::to_string(i);
+//        water_texture->setFilename(RESOURCE_DIR + "water" + num + ".jpg");
+//        water_texture->init();
+//        water_texture->setWrapModes(GL_REPEAT, GL_REPEAT);
+//        water.push_back(water_texture);
+//    }
+//    prevTime = glfwGetTime();
+//    curWater = 0;
 }
 
 void drawNautilus(shared_ptr<MatrixStack> &M) {
@@ -1010,6 +994,19 @@ void drawScenery(shared_ptr<MatrixStack> &M) {
     float scale = 10.0f;
     drawSand(M, gridLL, gridUR, scale);
     drawSurface(M, gridLL, gridUR, scale);
+}
+
+void drawIver(shared_ptr<MatrixStack> &M) {
+    wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(5, fadeTexPhongProg);
+    M->pushMatrix();
+    M->translate(Vector3f(0, 2, 0));
+    M->rotate(M_PI, Vector3f(1, 0, 0));
+    M->scale(8);
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    iver->draw(fadeTexPhongProg);
+    M->popMatrix();
+    wreckTex->unbind(0);
 }
 
 void drawChimChiminy(shared_ptr<MatrixStack> &M) {
@@ -1208,6 +1205,16 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
 // MARK: render objects to scene
 static void render()
 {
+//    shared_ptr<Texture> water_texture;
+//    if (glfwGetTime() - prevTime >= elapse) {
+//        if (curWater == 10) {
+//            curWater = 0;
+//        } else
+//            curWater++;
+//        prevTime = glfwGetTime();
+//    };
+//    water_texture = water[curWater];
+    
     double t = glfwGetTime();
     // Press p to pause and play path
     if(!keyToggles['p']) {
@@ -1251,6 +1258,21 @@ static void render()
     
     // Push this frame
     M->pushMatrix();
+    
+//    // Caustic camera
+//    int width, height;
+//    glfwGetFramebufferSize(window, &width, &height);
+//    camera2->setAspect((float)width/(float)height);
+//    
+//    // Caustic matrix stacks
+//    auto caust_P = make_shared<MatrixStack>();
+//    auto caust_MV = make_shared<MatrixStack>();
+//    
+//    // Apply scene camera transforms
+//    caust_P->pushMatrix();
+//    camera2->applyProjectionMatrix(caust_P);
+//    caust_MV->pushMatrix();
+//    camera2->applyViewMatrix(caust_MV);
     
     drawTexturedObjects(P, V, M, lightPos, lightCol);
     drawSeaweed(P, V, M, lightPos, lightCol, t);
