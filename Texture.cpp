@@ -59,13 +59,13 @@ void Texture::init()
 	stbi_image_free(data);
 }
 
-// void Texture::setWrapModes(GLint wrapS, GLint wrapT)
-// {
-// 	// Must be called after init()
-// 	glBindTexture(GL_TEXTURE_2D, tid);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
-// 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
-// }
+ void Texture::setWrapModes(GLint wrapS, GLint wrapT)
+ {
+ 	// Must be called after init()
+ 	glBindTexture(GL_TEXTURE_2D, tid);
+ 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapS);
+ 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapT);
+ }
 
 void Texture::bind(GLint handle, GLint unit)
 {

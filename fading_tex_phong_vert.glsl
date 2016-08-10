@@ -14,8 +14,14 @@ out vec3 halfVecRaw;
 out float dist;
 out vec3 vertPosWorld;
 
+//uniform mat4 caust_P;
+//uniform mat4 caust_MV;
+//varying vec4 caust_pos;
+
 void main()
 {
+  //  caust_pos = caust_P * caust_MV * aPos;
+
 	vec4 viewPos4 = V * M * vertPos;
 	gl_Position = P * viewPos4;
 	fragNorRaw = (M * vec4(vertNor, 0.0)).xyz;

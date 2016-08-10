@@ -16,7 +16,7 @@ public:
 	// void setUnit(GLint u) { unit = u; }
 	void bind(GLint handle, GLint unit);
 	void unbind(GLint unit);
-	// void setWrapModes(GLint wrapS, GLint wrapT); // Must be called after init()
+    void setWrapModes(GLint wrapS, GLint wrapT); // Must be called after init()
 
 private:
 	std::string filename;

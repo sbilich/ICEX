@@ -14,8 +14,14 @@ out vec3 halfVecRaw;
 out vec3 vertPosWorld;
 out float dist;
 
+//uniform mat4 caust_P;
+//uniform mat4 caust_MV;
+//varying vec4 caust_pos;
+
 void main()
 {
+    //caust_pos = caust_P * caust_MV * aPos;
+
 	float hRatio = vertPos.y / 2.0f;
 	mat4 M0 = mat4(1.0f);
 	M0[3][0] = wave.x * hRatio * sin(vertPos.y + t/2);

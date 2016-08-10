@@ -32,14 +32,11 @@ shared_ptr<Program> tex_prog;          // Render the framebuffer texture to the 
 
 // OBJ shapes
 shared_ptr<Shape> plane;
-shared_ptr<Shape> nefertiti;
 shared_ptr<Shape> rock0;
 shared_ptr<Shape> rock1;
 shared_ptr<Shape> rock2;
 shared_ptr<Shape> rock3;
 shared_ptr<Shape> seaweed;
-shared_ptr<Shape> nautilus;
-shared_ptr<Shape> submarine;
 shared_ptr<Shape> wreck;
 shared_ptr<Shape> iver;
 
@@ -52,15 +49,11 @@ shared_ptr<Texture> surfaceTex;
 shared_ptr<Texture> coral0Tex;
 shared_ptr<Texture> coral1Tex;
 shared_ptr<Texture> coral2Tex;
-shared_ptr<Texture> rustedMetalTex0;
-shared_ptr<Texture> rustedMetalTex1;
 shared_ptr<Texture> wreckTex;
 
 // Object transforms handled in this thread
 vector<Matrix4f> rockTransforms;
 vector<Matrix4f> seaweedTransforms;
-vector<Matrix4f> nautilusTransforms;
-vector<Matrix4f> submarineTransforms;
 
 // Higher order obj classes that handle some of their own movement
 vector<Bubbles> bubbles;
@@ -74,6 +67,10 @@ double speed;
 float viewDist;
 int iter = 0;
 int iterations = 720;
+
+//// Caustic camera parameters
+//Vector3d caust_camPos;
+//Vector3d caust_camDir;
 
 int g_width, g_height;
 int actualW, actualH;
@@ -89,6 +86,10 @@ int actualW, actualH;
 // Vector of camera positions and directions, initialized at the beginning
 vector<Vector3d> camPosVec;
 vector<Vector3d> camDirVec;
+
+//// Vector of caustic camera positions and directions, initialized at the beginning
+//vector<Vector3d> caust_camPosVec;
+//vector<Vector3d> caust_camDirVec;
 
 // framebuffer and texture to render to
 GLuint framebuffer, renderTexture, depthRenderBuffer;
@@ -193,7 +194,7 @@ void setCamPos3dof(Vector3d pos) {
     camPos = pos;
 }
 
-// Initializes arrays to circular path around Nefertiti head
+// Initializes arrays to circular path around old position of Nefertiti head
 void initCamPath() {
     double radius = 15;
     double dirDelta = (2 * M_PI) / iterations;
@@ -233,8 +234,6 @@ static void generate() {
     bubbles.clear();
     rockTransforms.clear();
     seaweedTransforms.clear();
-    nautilusTransforms.clear();
-    submarineTransforms.clear();
     
     // Initialize random bubbles
     int numBubbles = 600;
@@ -288,50 +287,6 @@ static void generate() {
             E->scale(sc);
             seaweedTransforms.push_back(E->topMatrix());
         }
-    }
-    
-    // Initialize random nautilus transforms
-    int numNaut = 3;
-    Vector2f nR(100.0f, 300.0f);
-    Vector2f nXRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
-    for (int i = 0; i < numNaut; i++) {
-        auto E = make_shared<MatrixStack>();
-        E->loadIdentity();
-        float r = randRangef(nR(0), nR(1));
-        float xRot = randRangef(nXRot(0), nXRot(1));
-        float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
-        float zRot = randRangef(0.0f, 2.0f * (float)M_PI);
-        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-        
-        E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-        E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
-        E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
-        E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
-        E->scale(50.0f);
-        
-        nautilusTransforms.push_back(E->topMatrix());
-    }
-    
-    // Initialize random submarine transforms
-    int numSub = 2;
-    Vector2f subR(75.0f, 300.0f);
-    Vector2f subZRot(-30.0f * (float)M_PI / 180, 30.0f * (float)M_PI / 180);
-    for (int i = 0; i < numSub; i++) {
-        auto E = make_shared<MatrixStack>();
-        E->loadIdentity();
-        float r = randRangef(subR(0), subR(1));
-        float xRot = randRangef(0.0f, 2.0f * (float)M_PI);
-        float yRot = randRangef(0.0f, 2.0f * (float)M_PI);
-        float zRot = randRangef(subZRot(0), subZRot(1));
-        float theta = randRangef(0.0f, 2.0f * (float)M_PI);
-        
-        E->translate(Vector3f(r * cos(theta), 0.0f, r * sin(theta)));
-        E->rotate(yRot, Vector3f(0.0f, 1.0f, 0.0f));
-        E->rotate(zRot, Vector3f(0.0f, 0.0f, 1.0f));
-        E->rotate(xRot, Vector3f(1.0f, 0.0f, 0.0f));
-        E->scale(25.0f);
-        
-        submarineTransforms.push_back(E->topMatrix());
     }
 }
 
@@ -460,12 +415,6 @@ void setMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.2f, 0.99f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
-//        case 5: // shark
-//            glUniform3f(prog->getUniform("matAmb"), 0.25098f / 3, 0.192157f / 3, 0.282353f / 3);
-//            glUniform3f(prog->getUniform("matDif"), 0.25098f, 0.192157f, 0.282353f);
-//            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-//            glUniform1f(prog->getUniform("matShine"), 5.0);
-//            break;
         case 5: // bubbles
             glUniform3f(prog->getUniform("matAmb"), 0.9f, 0.9f, 0.9f);
             glUniform3f(prog->getUniform("matDif"), 0.0f, 0.0f, 0.0f);
@@ -503,19 +452,7 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
             glUniform1f(prog->getUniform("matShine"), 5.0f);
             break;
-        case 3: // nautilus
-            glUniform1f(prog->getUniform("matAmb"), 0.25f);
-            glUniform1f(prog->getUniform("matDif"), 1.0f);
-            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
-            glUniform1f(prog->getUniform("matShine"), 45.0f);
-            break;
-        case 4: // submarine
-            glUniform1f(prog->getUniform("matAmb"), 0.25f);
-            glUniform1f(prog->getUniform("matDif"), 1.0f);
-            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.45f, 0.45f);
-            glUniform1f(prog->getUniform("matShine"), 45.0f);
-            break;
-        case 5: // ICEX wreck
+        case 3: // ICEX wreck
             glUniform1f(prog->getUniform("matAmb"), 1.0f);
             glUniform1f(prog->getUniform("matDif"), 1.0f);
             glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
@@ -607,6 +544,10 @@ static void init()
     camPos = Vector3d(0.0, 1.0, -15.0);
     camDir = Vector3d(0.0, 0.0, 1.0);
     
+//    // Initialize caustics camera variables
+//    caust_camPos = Vector3d();
+//    caust_camDir = Vector3d();
+    
     // Set background color.
     //   glClearColor(.051f, .553f, .875f, 1.0f); // blue background
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
@@ -666,7 +607,7 @@ static void init()
     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
     
-    loadRoadMapFromMotionPlanFiles();
+    //loadRoadMapFromMotionPlanFiles();
     //loadRoadMapFromCSVFiles();
     
     // Setup vao for rendering path lines
@@ -705,12 +646,6 @@ static void init()
     plane->resize();
     plane->init();
     
-    // Initialize nefertiti.
-    nefertiti = make_shared<Shape>();
-    nefertiti->loadMesh(RESOURCE_DIR + "Nefertiti-10K.obj");
-    nefertiti->resize();
-    nefertiti->init();
-    
     // Initialize rock 0.
     rock0 = make_shared<Shape>();
     rock0->loadMesh(RESOURCE_DIR + "Boulder1.obj");
@@ -742,18 +677,6 @@ static void init()
     seaweed->resize();
     seaweed->moveToGround();
     seaweed->init();
-    
-    // Initialize nautilus.
-    nautilus = make_shared<Shape>();
-    nautilus->loadMesh(RESOURCE_DIR + "nautilus.obj");
-    nautilus->resize();
-    nautilus->init();
-    
-    // Initialize submarine.
-    submarine = make_shared<Shape>();
-    submarine->loadMesh(RESOURCE_DIR + "submarine.obj");
-    submarine->resize();
-    submarine->init();
     
     // Initialize ICEX wreck
     wreck = make_shared<Shape>();
@@ -791,16 +714,6 @@ static void init()
     coral2Tex = make_shared<Texture>();
     coral2Tex->setFilename(RESOURCE_DIR + "coral2.png");
     coral2Tex->init();
-    
-    // Initialize first rust texture.
-    rustedMetalTex0 = make_shared<Texture>();
-    rustedMetalTex0->setFilename(RESOURCE_DIR + "rustedMetal0.png");
-    rustedMetalTex0->init();
-    
-    // Initialize second rust texture.
-    rustedMetalTex1 = make_shared<Texture>();
-    rustedMetalTex1->setFilename(RESOURCE_DIR + "rustedMetal1.png");
-    rustedMetalTex1->init();
     
     // Initalize the ICEX wreck texture
     wreckTex = make_shared<Texture>();
@@ -890,32 +803,6 @@ static void init()
 //    curWater = 0;
 }
 
-void drawNautilus(shared_ptr<MatrixStack> &M) {
-    rustedMetalTex0->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(3, fadeTexPhongProg);
-    for (int i = 0; i < (int)nautilusTransforms.size(); i++) {
-        M->pushMatrix();
-        M->multMatrix(nautilusTransforms[i]);
-        glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-        nautilus->draw(fadeTexPhongProg);
-        M->popMatrix();
-    }
-    rustedMetalTex0->unbind(0);
-}
-
-void drawSubmarine(shared_ptr<MatrixStack> &M) {
-    rustedMetalTex1->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(4, fadeTexPhongProg);
-    for (int i = 0; i < (int)submarineTransforms.size(); i++) {
-        M->pushMatrix();
-        M->multMatrix(submarineTransforms[i]);
-        glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-        submarine->draw(fadeTexPhongProg);
-        M->popMatrix();
-    }
-    rustedMetalTex1->unbind(0);
-}
-
 void drawRocks(shared_ptr<MatrixStack> &M) {
     coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
     setTextureMaterial(2, fadeTexPhongProg);
@@ -998,7 +885,7 @@ void drawScenery(shared_ptr<MatrixStack> &M) {
 
 void drawIver(shared_ptr<MatrixStack> &M) {
     wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(5, fadeTexPhongProg);
+    setTextureMaterial(3, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, 0));
     M->rotate(M_PI, Vector3f(1, 0, 0));
@@ -1011,7 +898,7 @@ void drawIver(shared_ptr<MatrixStack> &M) {
 
 void drawChimChiminy(shared_ptr<MatrixStack> &M) {
     wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(5, fadeTexPhongProg);
+    setTextureMaterial(3, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, 0));
     M->rotate(M_PI, Vector3f(1, 0, 0));
@@ -1024,7 +911,7 @@ void drawChimChiminy(shared_ptr<MatrixStack> &M) {
 
 void drawBeaufighter(shared_ptr<MatrixStack> &M) {
     wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(5, fadeTexPhongProg);
+    setTextureMaterial(3, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, 0));
     M->rotate(M_PI / 2, Vector3f(1, 0, 0));
@@ -1050,10 +937,8 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     
-    drawNautilus(M);
-    drawSubmarine(M);
     drawScenery(M);
-    drawIver(M);
+    //drawIver(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
     
@@ -1307,7 +1192,6 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     
     // Create a windowed mode window and its OpenGL context.
-    // window = glfwCreateWindow(1200, 800, "Keenan M. Reimer", NULL, NULL);
     window = glfwCreateWindow(512, 384, "ICEX 2016", NULL, NULL);
     if(!window) {
         glfwTerminate();
