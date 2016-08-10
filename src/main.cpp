@@ -385,43 +385,13 @@ static void resize_callback(GLFWwindow *window, int width, int height) {
 void setMaterial(int i, shared_ptr<Program> prog) {
     
     switch (i) {
-        case 0: //shiny blue plastic
-            glUniform3f(prog->getUniform("matAmb"), 0.002f, 0.004f, 0.02f);
-            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.16f, 0.9f);
-            glUniform3f(prog->getUniform("matSpec"), 0.14f, 0.2f, 0.8f);
-            glUniform1f(prog->getUniform("matShine"), 120.0f);
-            break;
-        case 1: // flat grey
-            glUniform3f(prog->getUniform("matAmb"), 0.013f, 0.013f, 0.014f);
-            glUniform3f(prog->getUniform("matDif"), 0.3f, 0.3f, 0.4f);
-            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.4f);
-            glUniform1f(prog->getUniform("matShine"), 4.0f);
-            break;
-        case 2: // brass
-            glUniform3f(prog->getUniform("matAmb"), 2.0f * 0.03294f, 2.0f * 0.02235f, 2.0f * 0.002745f);
-            glUniform3f(prog->getUniform("matDif"), 0.7804f, 0.5686f, 0.11373f);
-            glUniform3f(prog->getUniform("matSpec"), 0.9922f, 0.941176f, 0.80784f);
-            glUniform1f(prog->getUniform("matShine"), 27.9f);
-            break;
-        case 3: // copper
-            glUniform3f(prog->getUniform("matAmb"), 0.01913f, 0.00735f, 0.00225f);
-            glUniform3f(prog->getUniform("matDif"), 0.7038f, 0.27048f, 0.0828f);
-            glUniform3f(prog->getUniform("matSpec"), 0.257f, 0.1376f, 0.08601f);
-            glUniform1f(prog->getUniform("matShine"), 12.8f);
-            break;
-        case 4: // aquamarine
-            glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.026f, 0.013f);
-            glUniform3f(prog->getUniform("matDif"), 0.0f, 0.8f, 0.7f);
-            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.2f, 0.99f);
-            glUniform1f(prog->getUniform("matShine"), 20.0f);
-            break;
-        case 5: // bubbles
+        case 0: // bubbles
             glUniform3f(prog->getUniform("matAmb"), 0.9f, 0.9f, 0.9f);
             glUniform3f(prog->getUniform("matDif"), 0.0f, 0.0f, 0.0f);
             glUniform3f(prog->getUniform("matSpec"), 0.1f, 0.1f, 0.1f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
-        case 6: // seaweed
+        case 1: // seaweed
             glUniform3f(prog->getUniform("matAmb"), 0.0f, 0.2f, 0.1f);
             glUniform3f(prog->getUniform("matDif"), 0.0f, 0.4f, 0.0f);
             glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
@@ -549,8 +519,8 @@ static void init()
 //    caust_camDir = Vector3d();
     
     // Set background color.
-    //   glClearColor(.051f, .553f, .875f, 1.0f); // blue background
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
+    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
+//    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -963,7 +933,7 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
     glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
     
     // Draw seaweeds
-    setMaterial(7, fadeWavePhongProg);
+    setMaterial(1, fadeWavePhongProg);
     for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
         M->pushMatrix();
         M->multMatrix(seaweedTransforms[i]);
@@ -994,7 +964,7 @@ void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
     
     // Draw Bubbles
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
-    setMaterial(6, fadePhongProg);
+    setMaterial(0, fadePhongProg);
     for (unsigned int i = 0; i < bubbles.size(); i++) {
         bubbles[i].draw(fadePhongProg, t);
     }
