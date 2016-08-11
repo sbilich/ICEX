@@ -38,6 +38,7 @@ shared_ptr<Shape> rock2;
 shared_ptr<Shape> rock3;
 shared_ptr<Shape> seaweed;
 shared_ptr<Shape> wreck;
+shared_ptr<Shape> xlighter;
 shared_ptr<Shape> iver;
 
 // Wrapper classes to pass multiple objs to higher order classes
@@ -50,6 +51,7 @@ shared_ptr<Texture> coral0Tex;
 shared_ptr<Texture> coral1Tex;
 shared_ptr<Texture> coral2Tex;
 shared_ptr<Texture> wreckTex;
+shared_ptr<Texture> xlighterTex;
 
 // Object transforms handled in this thread
 vector<Matrix4f> rockTransforms;
@@ -428,6 +430,12 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
             glUniform1f(prog->getUniform("matShine"), 1.0f);
             break;
+        case 4: // ICEX Xlighter wreck
+            glUniform1f(prog->getUniform("matAmb"), 1.0f);
+            glUniform1f(prog->getUniform("matDif"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
+            glUniform1f(prog->getUniform("matShine"), 1.0f);
+            break;
     }
 }
 
@@ -660,6 +668,12 @@ static void init()
     iver->resize();
     iver->init();
     
+    // Initialize ICEX xlighter
+    xlighter = make_shared<Shape>();
+    xlighter->loadMesh(RESOURCE_DIR + "ManoelPRMsCombined.obj");
+    xlighter->resize();
+    xlighter->init();
+    
     // Initialize sand texture.
     sandTex = make_shared<Texture>();
     sandTex->setFilename(RESOURCE_DIR + "sandLight.png");
@@ -689,6 +703,11 @@ static void init()
     wreckTex = make_shared<Texture>();
     wreckTex->setFilename(RESOURCE_DIR + "chimney.jpg");
     wreckTex->init();
+    
+    // Initalize the ICEX Xlighter wreck texture
+    xlighterTex = make_shared<Texture>();
+    xlighterTex->setFilename(RESOURCE_DIR + "ManoelPRMsCombined.jpg");
+    xlighterTex->init();
     
     // Generate the world
     generate();
@@ -892,6 +911,21 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
     wreckTex->unbind(0);
 }
 
+void drawXlighter(shared_ptr<MatrixStack> &M) {
+    xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    setTextureMaterial(4, fadeTexPhongProg);
+    M->pushMatrix();
+    M->translate(Vector3f(0, 2, 0));
+    M->rotate(90 * M_PI / 180.0f, Vector3f(1, 0, 0));
+    M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
+    M->rotate(10 * M_PI / 180.0f, Vector3f(0, 0, 1));
+    M->scale(8);
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    xlighter->draw(fadeTexPhongProg);
+    M->popMatrix();
+    xlighterTex->unbind(0);
+}
+
 /* Draw objects that:
  1. Are textured objs
  2. Need blinn-phong lighting
@@ -911,6 +945,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     //drawIver(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
+    drawXlighter(M);
     
     fadeTexPhongProg->unbind();
 }
@@ -921,7 +956,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  3. Fade in the distance
  */
 void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 Vector3f &lightPos,Vector3f &lightCol, double t) {
+                 Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1072,7 +1107,7 @@ static void render()
     
     double t = glfwGetTime();
     // Press p to pause and play path
-    if(!keyToggles['p']) {
+    if(keyToggles['p']) { //keyToggles['p']) {
         iter = ((iter + 1) % iterations); // Make sure iterations is set correctly!
         setCamPos6dof(camPosVec[iter], camDirVec[iter]);
         // std::cout << "pos: " << camPosVec[iter].transpose() << std::endl;
@@ -1129,9 +1164,9 @@ static void render()
 //    caust_MV->pushMatrix();
 //    camera2->applyViewMatrix(caust_MV);
     
-    drawTexturedObjects(P, V, M, lightPos, lightCol);
     drawSeaweed(P, V, M, lightPos, lightCol, t);
     drawBubbles(P, V, M, lightPos, lightCol, t);
+    drawTexturedObjects(P, V, M, lightPos, lightCol);
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
