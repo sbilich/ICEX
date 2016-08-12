@@ -955,7 +955,7 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
-    M->translate(Vector3f(0, 2, 0));
+    M->translate(Vector3f(0, 2, -1));
     M->rotate(90 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->rotate(10 * M_PI / 180.0f, Vector3f(0, 0, 1));
@@ -981,9 +981,10 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     
     
     M->pushMatrix();
-    M->translate(Vector3f(0, 2, 0));
-    M->rotate(M_PI, Vector3f(1, 0, 0));
-    M->scale(1.8);
+    M->translate(Vector3f(0, 5, 5));
+    M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
+    M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
+    M->scale(.35);
     glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
     iver_bodyAndRudder->draw(phongProg);
     setMaterial(3, phongProg);
@@ -1010,9 +1011,9 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     
     drawScenery(M);
-    //    drawChimChiminy(M);
-    //    drawBeaufighter(M);
-//    drawXlighter(M);
+//    drawChimChiminy(M);
+//    drawBeaufighter(M);
+    drawXlighter(M);
     
     fadeTexPhongProg->unbind();
 }
