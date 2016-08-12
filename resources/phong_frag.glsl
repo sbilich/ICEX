@@ -1,4 +1,4 @@
-on 330 core 
+#version 330 core
 uniform vec3 lightCol;
 uniform vec3 matAmb;
 uniform vec3 matDif;
