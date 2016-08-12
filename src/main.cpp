@@ -25,6 +25,7 @@ GLFWwindow *window; // Main application window
 string RESOURCE_DIR = ""; // Where the resources are loaded from
 
 // GLSL programs
+shared_ptr<Program> phongProg; // simple phong lighting shader
 shared_ptr<Program> fadePhongProg;  // Fading objs with phong lighting
 shared_ptr<Program> fadeTexPhongProg;  // Fading, textured objs with phong lighting
 shared_ptr<Program> fadeWavePhongProg;  // Fading, waving objs with phong lighting
@@ -38,8 +39,10 @@ shared_ptr<Shape> rock2;
 shared_ptr<Shape> rock3;
 shared_ptr<Shape> seaweed;
 shared_ptr<Shape> wreck;
+shared_ptr<Shape> iver_fins;
+shared_ptr<Shape> iver_noseAndTail;
+shared_ptr<Shape> iver_bodyAndRudder;
 shared_ptr<Shape> xlighter;
-shared_ptr<Shape> iver;
 
 // Wrapper classes to pass multiple objs to higher order classes
 shared_ptr<BubblesShapes> bubblesShapes;
@@ -399,6 +402,24 @@ void setMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
+        case 2: //iver bodyAndRudder
+            glUniform3f(prog->getUniform("matAmb"), 0.1f, 0.1f, 0.1f);
+            glUniform3f(prog->getUniform("matDif"), 0.64f, 0.64f, 0.64f);
+            glUniform3f(prog->getUniform("matSpec"), 0.5f, 0.5f, 0.5f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
+            break;
+        case 3: //iver noseAndTail
+            glUniform3f(prog->getUniform("matAmb"), 0.021768f, 0.021768f, 0.021768f);
+            glUniform3f(prog->getUniform("matDif"), 0.021768f, 0.021768f, 0.021768f);
+            glUniform3f(prog->getUniform("matSpec"), 0.055556f, 0.055556f, 0.055556f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
+            break;
+        case 4: //iver fins
+            glUniform3f(prog->getUniform("matAmb"), 0.64f, 0.253291f, 0.0f);
+            glUniform3f(prog->getUniform("matDif"), 0.64f, 0.253291f, 0.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.5f, 0.5f, 0.5f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
+            break;
     }
 }
 
@@ -662,17 +683,30 @@ static void init()
     wreck->resize();
     wreck->init();
     
-    // Initialize ICEX iver
-    iver = make_shared<Shape>();
-    iver->loadMesh(RESOURCE_DIR + "iver.obj");
-    iver->resize();
-    iver->init();
-    
     // Initialize ICEX xlighter
     xlighter = make_shared<Shape>();
     xlighter->loadMesh(RESOURCE_DIR + "ManoelPRMsCombined.obj");
     xlighter->resize();
     xlighter->init();
+    
+    //initialize ICEX iver parts
+    //intialize iver_fins
+    iver_fins = make_shared<Shape>();
+    iver_fins->loadMesh(RESOURCE_DIR + "iver_fins.obj");
+    //iver_fins->resize();
+    iver_fins->init();
+    
+    //intialize iver_bodyAndRudder
+    iver_bodyAndRudder = make_shared<Shape>();
+    iver_bodyAndRudder->loadMesh(RESOURCE_DIR + "iver_bodyAndRudder.obj");
+    //iver_bodyAndRudder->resize();
+    iver_bodyAndRudder->init();
+    
+    //intialize iver_noseAndTail
+    iver_noseAndTail = make_shared<Shape>();
+    iver_noseAndTail->loadMesh(RESOURCE_DIR + "iver_noseAndTail.obj");
+    //iver_noseAndTail->resize();
+    iver_noseAndTail->init();
     
     // Initialize sand texture.
     sandTex = make_shared<Texture>();
@@ -711,6 +745,25 @@ static void init()
     
     // Generate the world
     generate();
+    
+    //initialize the blinn-phong program
+    phongProg = make_shared<Program>();
+    phongProg->setVerbose(true);
+    phongProg->setShaderNames(RESOURCE_DIR + "phong_vert.glsl", RESOURCE_DIR + "phong_frag.glsl");
+    phongProg->init();
+    phongProg->addUniform("P");
+    phongProg->addUniform("V");
+    phongProg->addUniform("M");
+    phongProg->addUniform("camPos");
+    phongProg->addUniform("lightPos");
+    phongProg->addUniform("lightCol");
+    phongProg->addUniform("matAmb");
+    phongProg->addUniform("matDif");
+    phongProg->addUniform("matSpec");
+    phongProg->addUniform("matShine");
+    phongProg->addUniform("baseAlpha");
+    phongProg->addAttribute("vertPos");
+    phongProg->addAttribute("vertNor");
     
     // Initialize the fading blinn-phong program
     fadePhongProg = make_shared<Program>();
@@ -872,19 +925,6 @@ void drawScenery(shared_ptr<MatrixStack> &M) {
     drawSurface(M, gridLL, gridUR, scale);
 }
 
-void drawIver(shared_ptr<MatrixStack> &M) {
-    wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    setTextureMaterial(3, fadeTexPhongProg);
-    M->pushMatrix();
-    M->translate(Vector3f(0, 2, 0));
-    M->rotate(M_PI, Vector3f(1, 0, 0));
-    M->scale(8);
-    glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    iver->draw(fadeTexPhongProg);
-    M->popMatrix();
-    wreckTex->unbind(0);
-}
-
 void drawChimChiminy(shared_ptr<MatrixStack> &M) {
     wreckTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
     setTextureMaterial(3, fadeTexPhongProg);
@@ -926,6 +966,34 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->unbind(0);
 }
 
+void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
+              Vector3f &lightPos, Vector3f &lightCol, double t) {
+    phongProg->bind();
+    
+    glUniformMatrix4fv(phongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(phongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniform3f(phongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
+    glUniform3f(phongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(phongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
+    
+    setMaterial(2, phongProg);
+    
+    
+    M->pushMatrix();
+    M->translate(Vector3f(0, 2, 0));
+    M->rotate(M_PI, Vector3f(1, 0, 0));
+    M->scale(1.8);
+    glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+    iver_bodyAndRudder->draw(phongProg);
+    setMaterial(3, phongProg);
+    iver_noseAndTail->draw(phongProg);
+    setMaterial(4, phongProg);
+    iver_fins->draw(phongProg);
+    M->popMatrix();
+    fadePhongProg->unbind();
+}
+
 /* Draw objects that:
  1. Are textured objs
  2. Need blinn-phong lighting
@@ -942,10 +1010,9 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     
     drawScenery(M);
-    //drawIver(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
-    drawXlighter(M);
+//    drawXlighter(M);
     
     fadeTexPhongProg->unbind();
 }
@@ -1167,6 +1234,7 @@ static void render()
     drawSeaweed(P, V, M, lightPos, lightCol, t);
     drawBubbles(P, V, M, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, lightPos, lightCol);
+    drawIver(P, V, M, lightPos, lightCol, t);
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
