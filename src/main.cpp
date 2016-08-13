@@ -849,7 +849,7 @@ static void init()
 void drawRocks(shared_ptr<MatrixStack> &M) {
     coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
     setTextureMaterial(2, fadeTexPhongProg);
-    for (int i = 0; i < (int)rockTransforms.size(); i++) {
+    for (int i = 0; i < (int)rockTransforms.size()/3; i++) {
         // Switch textures at the 1 / 3 and 2 / 3 marks.
         if (i == (int)rockTransforms.size() / 3) {
             coral0Tex->unbind(0);
@@ -861,7 +861,7 @@ void drawRocks(shared_ptr<MatrixStack> &M) {
         }
         
         M->pushMatrix();
-        M->scale(0.3);
+        M->scale(0.2);
         M->multMatrix(rockTransforms[i]);
         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
         switch (i % 4) {
@@ -962,7 +962,8 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
     M->rotate(90 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->rotate(10 * M_PI / 180.0f, Vector3f(0, 0, 1));
-    M->scale(8);
+    M->rotate(20 * M_PI / 180.0f, Vector3f(0, 1, 0));
+    M->scale(12);
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
     xlighter->draw(fadeTexPhongProg);
     M->popMatrix();
@@ -1041,8 +1042,9 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
     
     // Draw seaweeds
     setMaterial(1, fadeWavePhongProg);
-    for (int i = 0; i < (int)seaweedTransforms.size(); i++) {
+    for (int i = 0; i < (int)seaweedTransforms.size()/3; i++) {
         M->pushMatrix();
+        M->scale(0.3);
         M->multMatrix(seaweedTransforms[i]);
         glUniformMatrix4fv(fadeWavePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
         seaweed->draw(fadeWavePhongProg);
