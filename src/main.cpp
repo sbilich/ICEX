@@ -860,6 +860,7 @@ void drawRocks(shared_ptr<MatrixStack> &M) {
         }
         
         M->pushMatrix();
+        M->scale(0.3);
         M->multMatrix(rockTransforms[i]);
         glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
         switch (i % 4) {
@@ -1196,9 +1197,15 @@ static void render()
     
     float aspect = actualW/(float)actualH;
     
+    vector<Vector3f> lightPositions;
+    vector<Vector3f> lightColors;
+
     // Define the light position in the world.
-    Vector3f lightPos(200.0f, 200.0f, -200.0f);
-    Vector3f lightCol(1.0f, 1.0f, 1.0f);
+    lightPositions.push_back(Vector3f(200.0f, 200.0f, 200.0f));
+    lightColors.push_back(Vector3f(0.25f, 0.25f, 0.5f));
+
+    // Vector3f lightPos(200.0f, 200.0f, 200.0f);
+    // Vector3f lightCol(0.25f, 0.25f, 0.5f);
     
     // Create the matrix stacks - please leave these alone for now
     auto P = make_shared<MatrixStack>();
@@ -1232,10 +1239,16 @@ static void render()
 //    caust_MV->pushMatrix();
 //    camera2->applyViewMatrix(caust_MV);
     
-    drawSeaweed(P, V, M, lightPos, lightCol, t);
-    drawBubbles(P, V, M, lightPos, lightCol, t);
-    drawTexturedObjects(P, V, M, lightPos, lightCol);
-    drawIver(P, V, M, lightPos, lightCol, t);
+    if(lightPositions.size() != lightColors.size()){
+    	cout << "Light position numbers do not match light colors. Exiting program" << endl;
+    	exit(EXIT_FAILURE);
+    }
+    for(int i = 0; i < (uint) lightPositions.size(); i++){
+    	drawSeaweed(P, V, M, lightPositions[i], lightColors[i], t);
+	    drawBubbles(P, V, M, lightPositions[i], lightColors[i], t);
+	    drawTexturedObjects(P, V, M, lightPositions[i], lightColors[i]);
+	    drawIver(P, V, M, lightPositions[i], lightColors[i], t);
+    }
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
