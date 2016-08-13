@@ -804,6 +804,7 @@ static void init()
     fadeTexPhongProg->addUniform("matSpec");
     fadeTexPhongProg->addUniform("matShine");
     fadeTexPhongProg->addUniform("texture0");
+    fadeTexPhongProg->addUniform("brightness");
     fadeTexPhongProg->addAttribute("vertPos");
     fadeTexPhongProg->addAttribute("vertNor");
     fadeTexPhongProg->addAttribute("vertTex");
@@ -954,6 +955,7 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
 
 void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, -1));
@@ -1010,6 +1012,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
     glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
+    glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
     
     drawScenery(M);
 //    drawChimChiminy(M);

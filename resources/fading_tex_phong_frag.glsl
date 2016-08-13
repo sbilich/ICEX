@@ -5,6 +5,7 @@ uniform float matAmb;
 uniform float matDif;
 uniform vec3 matSpec;
 uniform float matShine;
+//uniform float brighness; //with 1 being full and 0 being completely dark
 uniform sampler2D texture0;
 in vec3 fragNorRaw;
 in vec2 fragTex;
@@ -50,7 +51,7 @@ void main()
 	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	}
 
-	// color = vec4(vertCol, max(alpha, 0.0f));
-    color = vec4(tex, 1); //+ caustColor, 1);
-	// color = vec4(fragTex.st, 0, 1);
+	 color = vec4(vertCol * 0.5/*brightness*/, max(alpha, 0.0f)); //textures are way too bright so just uniformly darken them by 0.5
+    //color = vec4(tex, 1); //+ caustColor, 1);
+	//color = vec4(fragTex.st, 0, 1);
 }
