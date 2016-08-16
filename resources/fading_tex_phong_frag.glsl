@@ -1,6 +1,6 @@
 #version 330 core 
 uniform float viewDist;
-uniform vec3 lightCol;
+uniform float lightCol[6];
 uniform float matAmb;
 uniform float matDif;
 uniform vec3 matSpec;
@@ -9,8 +9,8 @@ uniform float matShine;
 uniform sampler2D texture0;
 in vec3 fragNorRaw;
 in vec2 fragTex;
-in vec3 lightVecRaw;
-in vec3 halfVecRaw;
+in vec3 lightVecRaw[2];
+in vec3 halfVecRaw[2];
 in float dist;
 in vec3 vertPosWorld;
 // out vec4 color;
@@ -31,27 +31,36 @@ void main()
 
 	// Re-Normalize
 	vec3 fragNor = normalize(fragNorRaw);
-	vec3 lightVec = normalize(lightVecRaw);
-	vec3 halfVec = normalize(halfVecRaw);
+	vec3 lightVec[2];
+	lightVec[0] = normalize(lightVecRaw[0]);
+	lightVec[1] = normalize(lightVecRaw[1]);
+	vec3 halfVec[2];
+	halfVec[0] = normalize(halfVecRaw[0]);
+	halfVec[1] = normalize(halfVecRaw[1]);
 
 	// Compute Phong color.
 	fragNor = normalize(fragNor);
 
 	vec3 tex = texture(texture0, fragTex).rgb;
-	vec3 diffuseCol = lightCol * max(dot(fragNor, lightVec), 0.0f) * matDif * tex;
-	vec3 specularCol = lightCol * pow(max(dot(fragNor, halfVec), 0.0f), matShine) * matSpec;
 	vec3 ambientCol = matAmb * tex;
-	vec3 vertCol = diffuseCol + specularCol + ambientCol;
-
-	// Compute Fade alpha.
-	float alpha = 1.0f;
-	float fadeBegin = 0.5f * viewDist;
-	float fadeEnd = viewDist;
-	if (dist > fadeBegin) {
-	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
+	vec3 diffuseCol;
+	vec3 specularCol;
+	vec3 vertCol = ambientCol;
+	for(int i = 0; i < 2; i++){
+		diffuseCol = lightCol[i] * max(dot(fragNor, lightVec[i]), 0.0f) * matDif * tex;
+		specularCol = lightCol[i] * pow(max(dot(fragNor, halfVec[i]), 0.0f), matShine) * matSpec;
+		vertCol += diffuseCol + specularCol;
 	}
+	
+	// Compute Fade alpha.
+	// float alpha = 1.0f;
+	// float fadeBegin = 0.5f * viewDist;
+	// float fadeEnd = viewDist;
+	// if (dist > fadeBegin) {
+	//    alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
+	// }
 
-	 color = vec4(vertCol * 0.5/*brightness*/, max(alpha, 0.0f)); //textures are way too bright so just uniformly darken them by 0.5
+	 color = vec4(vertCol * 0.5/*brightness*/, 1.0f); //textures are way too bright so just uniformly darken them by 0.5
     //color = vec4(tex, 1); //+ caustColor, 1);
 	//color = vec4(fragTex.st, 0, 1);
 }

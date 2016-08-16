@@ -441,8 +441,8 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
             break;
         case 2: // coral
             glUniform1f(prog->getUniform("matAmb"), 0.25f);
-            glUniform1f(prog->getUniform("matDif"), 1.0f);
-            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matDif"), 0.6f);
+            glUniform3f(prog->getUniform("matSpec"), 0.1f, 0.1f, 0.1f);
             glUniform1f(prog->getUniform("matShine"), 5.0f);
             break;
         case 3: // ICEX wreck
@@ -452,10 +452,10 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
             glUniform1f(prog->getUniform("matShine"), 1.0f);
             break;
         case 4: // ICEX Xlighter wreck
-            glUniform1f(prog->getUniform("matAmb"), 1.0f);
+            glUniform1f(prog->getUniform("matAmb"), 0.25f);
             glUniform1f(prog->getUniform("matDif"), 1.0f);
-            glUniform3f(prog->getUniform("matSpec"), 0.0f, 0.0f, 0.0f);
-            glUniform1f(prog->getUniform("matShine"), 1.0f);
+            glUniform3f(prog->getUniform("matSpec"), 0.3f, 0.3f, 0.3f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
             break;
     }
 }
@@ -985,7 +985,7 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     
     
     M->pushMatrix();
-    M->translate(Vector3f(0, 5, 5));
+    M->translate(Vector3f(5, 5, 5));
     M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->scale(.35);
@@ -1005,13 +1005,13 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
  3. Fade in the distance
  */
 void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                         Vector3f &lightPos, Vector3f &lightCol) {
+                         float lightPos[], float lightCol[]) {
     fadeTexPhongProg->bind();
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadeTexPhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadeTexPhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform1fv(fadeTexPhongProg->getUniform("lightPos"), 6, lightPos);
+    glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
     
@@ -1202,12 +1202,10 @@ static void render()
     
     float aspect = actualW/(float)actualH;
     
-    vector<Vector3f> lightPositions;
-    vector<Vector3f> lightColors;
-
-    // Define the light position in the world.
-    lightPositions.push_back(Vector3f(200.0f, 200.0f, 200.0f));
-    lightColors.push_back(Vector3f(0.25f, 0.25f, 0.5f));
+    float lightPos[] = {200.0f, 200.0f, 200.0f,
+                        5.0f, 5.0f, -10.0f};
+    float lightCol[] = {1.25f, 0.25f, 0.5f,
+                        10.0f, 1.0f, 1.0f};
 
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
     // Vector3f lightCol(0.25f, 0.25f, 0.5f);
@@ -1243,17 +1241,14 @@ static void render()
 //    camera2->applyProjectionMatrix(caust_P);
 //    caust_MV->pushMatrix();
 //    camera2->applyViewMatrix(caust_MV);
-    
-    if(lightPositions.size() != lightColors.size()){
-    	cout << "Light position numbers do not match light colors. Exiting program" << endl;
-    	exit(EXIT_FAILURE);
-    }
-    for(int i = 0; i < (uint) lightPositions.size(); i++){
-    	drawSeaweed(P, V, M, lightPositions[i], lightColors[i], t);
-	    drawBubbles(P, V, M, lightPositions[i], lightColors[i], t);
-	    drawTexturedObjects(P, V, M, lightPositions[i], lightColors[i]);
-	    drawIver(P, V, M, lightPositions[i], lightColors[i], t);
-    }
+
+    Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
+    Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
+
+	drawSeaweed(P, V, M, lightPosVec, lightColVec, t);
+    drawBubbles(P, V, M, lightPosVec, lightColVec, t);
+    drawTexturedObjects(P, V, M, lightPos, lightCol);
+    drawIver(P, V, M, lightPosVec, lightColVec, t);
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
