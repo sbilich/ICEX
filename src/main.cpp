@@ -752,7 +752,9 @@ static void init()
     phongProg->addUniform("M");
     phongProg->addUniform("camPos");
     phongProg->addUniform("lightPos");
+    phongProg->addUniform("lightPos2");
     phongProg->addUniform("lightCol");
+    phongProg->addUniform("lightCol2");
     phongProg->addUniform("matAmb");
     phongProg->addUniform("matDif");
     phongProg->addUniform("matSpec");
@@ -979,14 +981,16 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
 }
 
 void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-              shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
+              shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     phongProg->bind();
     
     glUniformMatrix4fv(phongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(phongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(phongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
     glUniform3f(phongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(phongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform3f(phongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(phongProg->getUniform("lightCol"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(phongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
     water_texture->bind(phongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(phongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
@@ -1270,7 +1274,7 @@ static void render()
     drawSeaweed(P, V, M, caust_V, lightPosVec, lightColVec, t);
     drawBubbles(P, V, M, caust_V, lightPosVec, lightColVec, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
-    drawIver(P, V, M, caust_V, lightPosVec, lightColVec, t);
+    drawIver(P, V, M, caust_V, lightPos, lightCol, t);
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
