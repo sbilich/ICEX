@@ -11,8 +11,13 @@ out vec3 lightVecRaw;
 out vec3 halfVecRaw;
 out vec3 vertPosWorld;
 
+uniform mat4 caust_V;
+out vec4 caust_pos;
+
 void main()
 {
+    caust_pos = P * caust_V * M * vertPos;
+    
 	gl_Position = P * V * M * vertPos;
 	gl_PointSize = 10.0;
 	fragNorRaw = (M * vec4(vertNor, 0.0)).xyz;

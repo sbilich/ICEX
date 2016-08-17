@@ -5,6 +5,7 @@ uniform vec3 matDif;
 uniform vec3 matSpec;
 uniform float matShine;
 uniform float viewDist;
+uniform sampler2D water;
 in vec3 fragNorRaw;
 in vec3 lightVecRaw;
 in vec3 halfVecRaw;
@@ -13,14 +14,14 @@ in float dist;
 // out vec4 color;
 layout(location = 0) out vec4 color;
 
-//varying vec4 caust_pos;
+in vec4 caust_pos;
 
 void main()
 {
-    //vec4 caustTex = caust_pos / caust_pos.w;
-    //caustTex *= 0.5;
-    //caustTex += 0.5;
-    //vec3 caustColor = texture2D(water, caustTex.xy).rgb;
+    vec4 caustTex = caust_pos / caust_pos.w;
+    caustTex *= 0.5;
+    caustTex += 0.5;
+    vec3 caustColor = texture(water, caustTex.xy).rgb;
     
 	if (vertPosWorld.y < 0.0f) {
 	   discard;
@@ -43,5 +44,5 @@ void main()
 	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	}
 
-    color = vec4(vertCol, max(alpha, 0.0f)); //+ caustColor, max(alpha, 0.0f));
+    color = vec4(vertCol + caustColor, max(alpha, 0.0f));
 }
