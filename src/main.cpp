@@ -798,6 +798,10 @@ static void init()
     fadeTexPhongProg->addUniform("camPos");
     fadeTexPhongProg->addUniform("lightPos");
     fadeTexPhongProg->addUniform("lightCol");
+    fadeTexPhongProg->addUniform("lightPos1");
+    fadeTexPhongProg->addUniform("lightPos2");
+    fadeTexPhongProg->addUniform("lightCol1");
+    fadeTexPhongProg->addUniform("lightCol2");
     fadeTexPhongProg->addUniform("viewDist");
     fadeTexPhongProg->addUniform("matAmb");
     fadeTexPhongProg->addUniform("matDif");
@@ -1012,6 +1016,14 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
     glUniform1fv(fadeTexPhongProg->getUniform("lightPos"), 6, lightPos);
     glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
+
+    glUniform3f(fadeTexPhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadeTexPhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(fadeTexPhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(fadeTexPhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
+
+
+
     glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
     
@@ -1203,9 +1215,9 @@ static void render()
     float aspect = actualW/(float)actualH;
     
     float lightPos[] = {200.0f, 200.0f, 200.0f,
-                        5.0f, 5.0f, -10.0f};
-    float lightCol[] = {1.25f, 0.25f, 0.5f,
-                        10.0f, 1.0f, 1.0f};
+                        8.0f, 1.0f, -10.0f};
+    float lightCol[] = {0.25f, 0.25f, 0.5f,
+                        1.0f, 1.0f, 1.0f};
 
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
     // Vector3f lightCol(0.25f, 0.25f, 0.5f);
