@@ -15,8 +15,8 @@ out vec3 lightVecRaw1;
 out vec3 lightVecRaw2;
 out vec3 halfVecRaw1;
 out vec3 halfVecRaw2;
-out vec3 lightVecRaw[2];
-out vec3 halfVecRaw[2];
+// out vec3 lightVecRaw[2];
+// out vec3 halfVecRaw[2];
 out float dist;
 out vec3 vertPosWorld;
 
@@ -41,17 +41,17 @@ void main()
     halfVecRaw2 = 0.5f * (viewVec + lightVecRaw2);
     
     
-    lightVecRaw[0] = normalize(lightPos[0] - vertPosWorld);
-    lightVecRaw[1] = normalize(lightPos[1] - vertPosWorld);
-    halfVecRaw[0] = 0.5f * (viewVec + lightVecRaw[0]);
-    halfVecRaw[1] = 0.5f * (viewVec + lightVecRaw[1]);
+ //    lightVecRaw[0] = normalize(lightPos[0] - vertPosWorld);
+ //    lightVecRaw[1] = normalize(lightPos[1] - vertPosWorld);
+ //    halfVecRaw[0] = 0.5f * (viewVec + lightVecRaw[0]);
+ //    halfVecRaw[1] = 0.5f * (viewVec + lightVecRaw[1]);
 
 
 
-	lightVecRaw[0] = normalize(lightPos[0] - vertPosWorld);
-	lightVecRaw[1] = normalize(lightPos[1] - vertPosWorld);
-	halfVecRaw[0] = 0.5f * (viewVec + lightVecRaw[0]);
-	halfVecRaw[1] = 0.5f * (viewVec + lightVecRaw[1]);
+	// lightVecRaw[0] = normalize(lightPos[0] - vertPosWorld);
+	// lightVecRaw[1] = normalize(lightPos[1] - vertPosWorld);
+	// halfVecRaw[0] = 0.5f * (viewVec + lightVecRaw[0]);
+	// halfVecRaw[1] = 0.5f * (viewVec + lightVecRaw[1]);
 
 	// Send dist to frag shader for fading.
 	vec3 camDist = vertPosWorld - camPos;

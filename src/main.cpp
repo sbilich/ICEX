@@ -543,7 +543,8 @@ static void init()
     caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
     // Set background color.
-    glClearColor(.011f, .129f, .247f, 1.0f);
+    Vector3f bGColor = Vector3f(.011f, .129f, .247f) * 0.3f;
+    glClearColor(bGColor[0], bGColor[1], bGColor[2], 1.0f);
 //    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
 //    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
     // Enable z-buffer test.
@@ -1236,9 +1237,9 @@ static void render()
     float aspect = actualW/(float)actualH;
     
     float lightPos[] = {200.0f, 200.0f, 200.0f,
-                        8.0f, 1.0f, -10.0f};
-    float lightCol[] = {0.25f, 0.25f, 0.5f,
-                        1.0f, 1.0f, 1.0f};
+                        -5.0f, 0.1f, 8.0f};
+    float lightCol[] = {0.5f, 0.5f, 0.75f,
+                        0.5f, 0.5f, 0.5f};
     
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
     // Vector3f lightCol(0.25f, 0.25f, 0.5f);
