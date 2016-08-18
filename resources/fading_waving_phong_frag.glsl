@@ -44,5 +44,15 @@ void main()
 	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	}
 
-    color = vec4(vertCol + caustColor, max(alpha, 0.0f));
+    // density of fog
+    float density = 0.003;
+
+    const float LOG2 = 1.442695;
+    float z = gl_FragCoord.z / gl_FragCoord.w;
+    float fogFactor = exp2(- density * density * z * z * LOG2);
+    fogFactor = clamp(fogFactor, 0.0f, 1.0f);
+
+    vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
+
+    color = mix(fog_color, vec4(vertCol + caustColor, max(alpha, 0.0f)), fogFactor);
 }

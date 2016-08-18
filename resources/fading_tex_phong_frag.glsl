@@ -84,12 +84,22 @@ void main()
 	// if (dist > fadeBegin) {
 	//   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	// }
+    
+    // density of fog
+    float density = 0.0025;
+    
+    const float LOG2 = 1.442695;
+    float z = gl_FragCoord.z / gl_FragCoord.w;
+    float fogFactor = exp2(- density * density * z * z * LOG2);
+    fogFactor = clamp(fogFactor, 0.0f, 1.0f);
+    
+    vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
 
 	// color = vec4(vertCol, max(alpha, 0.0f));
     if (caust) {
-        color = vec4((vertCol + caustColor) * 0.5/*brightness*/, 1.0f);
+        color = mix(fog_color, vec4((vertCol + caustColor) * 0.5/*brightness*/, 1.0f), fogFactor);
     } else {
-        color = vec4(vertCol * 0.5/*brightness*/, 1.0f); //textures are way too bright so just uniformly darken them by 0.5
+        color = mix(fog_color, vec4(vertCol * 0.5/*brightness*/, 1.0f), fogFactor); //textures are way too bright so just uniformly darken them by 0.5
     }
 
 	// color = vec4(fragTex.st, 0, 1);
