@@ -12,13 +12,12 @@ out vec3 halfVecRaw;
 out vec3 vertPosWorld;
 out float dist;
 
-//uniform mat4 caust_P;
-//uniform mat4 caust_MV;
-//varying vec4 caust_pos;
+uniform mat4 caust_V;
+out vec4 caust_pos;
 
 void main()
 {
-    //caust_pos = caust_P * caust_MV * aPos;
+    caust_pos = P * caust_V * M * vertPos;
     
 	gl_Position = P * V * M * vertPos;
 	gl_PointSize = 10.0;

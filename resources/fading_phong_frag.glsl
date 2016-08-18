@@ -6,6 +6,7 @@ uniform vec3 matSpec;
 uniform float matShine;
 uniform float viewDist;
 uniform float baseAlpha;
+uniform sampler2D water;
 in vec3 fragNorRaw;
 in vec3 lightVecRaw;
 in vec3 halfVecRaw;
@@ -15,14 +16,14 @@ in float dist;
 layout(location = 0) out vec4 color;
 // layout(location = 0) out vec3 color;
 
-//varying vec4 caust_pos;
+in vec4 caust_pos;
 
 void main()
 {
-    //vec4 caustTex = caust_pos / caust_pos.w;
-    //caustTex *= 0.5;
-    //caustTex += 0.5;
-    //vec3 caustColor = texture2D(water, caustTex.xy).rgb;
+    vec4 caustTex = caust_pos / caust_pos.w;
+    caustTex *= 0.5;
+    caustTex += 0.5;
+    vec3 caustColor = texture(water, caustTex.xy).rgb;
     
 	if (vertPosWorld.y < 0.0f) {
 	   discard;
@@ -44,7 +45,17 @@ void main()
 	if (dist > fadeBegin) {
 	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	}
+    
+    // density of fog
+    float density = 0.003;
+    
+    const float LOG2 = 1.442695;
+    float z = gl_FragCoord.z / gl_FragCoord.w;
+    float fogFactor = exp2(- density * density * z * z * LOG2);
+    fogFactor = clamp(fogFactor, 0.0f, 1.0f);
+    
+    vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
 
-    color = vec4(vertCol * 0.5, max((alpha * baseAlpha) - 0.2, 0.0f)); //+ caustColor, max(alpha * baseAlpha, 0.0f));
-    //color = vec4(1.0f, 0.0f, 0.0f, 1.0f);            //+ caustColor.r, 0.0f + caustColor.g, 0.0f + caustColor.b, 1.0f);
+    color = mix(fog_color, vec4((vertCol + caustColor) * 0.5, max((alpha * baseAlpha) - 0.2, 0.0f)), fogFactor);
+    //color = vec4(1.0f + caustColor.r, 0.0f + caustColor.g, 0.0f + caustColor.b, 1.0f);
 }

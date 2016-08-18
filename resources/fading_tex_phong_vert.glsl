@@ -20,13 +20,12 @@ out vec3 halfVecRaw[2];
 out float dist;
 out vec3 vertPosWorld;
 
-//uniform mat4 caust_P;
-//uniform mat4 caust_MV;
-//varying vec4 caust_pos;
+uniform mat4 caust_V;
+out vec4 caust_pos;
 
 void main()
 {
-  //  caust_pos = caust_P * caust_MV * aPos;
+    caust_pos = P * caust_V * M * vertPos;
 
 	vec4 viewPos4 = V * M * vertPos;
 	gl_Position = P * viewPos4;
@@ -36,10 +35,16 @@ void main()
 	// Compute Phong vectors.
 	vertPosWorld = (M * vertPos).xyz;
 	vec3 viewVec = normalize(camPos - vertPosWorld);
-	lightVecRaw1 = normalize(lightPos1 - vertPosWorld);
-	lightVecRaw2 = normalize(lightPos2 - vertPosWorld);
-	halfVecRaw1 = 0.5f * (viewVec + lightVecRaw1);
-	halfVecRaw2 = 0.5f * (viewVec + lightVecRaw2);
+    lightVecRaw1 = normalize(lightPos1 - vertPosWorld);
+    lightVecRaw2 = normalize(lightPos2 - vertPosWorld);
+    halfVecRaw1 = 0.5f * (viewVec + lightVecRaw1);
+    halfVecRaw2 = 0.5f * (viewVec + lightVecRaw2);
+    
+    
+    lightVecRaw[0] = normalize(lightPos[0] - vertPosWorld);
+    lightVecRaw[1] = normalize(lightPos[1] - vertPosWorld);
+    halfVecRaw[0] = 0.5f * (viewVec + lightVecRaw[0]);
+    halfVecRaw[1] = 0.5f * (viewVec + lightVecRaw[1]);
 
 
 

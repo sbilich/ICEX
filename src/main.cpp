@@ -55,6 +55,7 @@ shared_ptr<Texture> coral1Tex;
 shared_ptr<Texture> coral2Tex;
 shared_ptr<Texture> wreckTex;
 shared_ptr<Texture> xlighterTex;
+shared_ptr<Texture> water_texture;
 
 // Object transforms handled in this thread
 vector<Matrix4f> rockTransforms;
@@ -73,28 +74,24 @@ float viewDist;
 int iter = 0;
 int iterations = 720;
 
-//// Caustic camera parameters
-//Vector3d caust_camPos;
-//Vector3d caust_camDir;
+// Caustic camera parameters
+Vector3d caust_camPos;
+Vector3d caust_camDir;
 
 int g_width, g_height;
 int actualW, actualH;
 
 // These things added for ICEX
 
-//// for caustics
-//const double elapse = 0.1;
-//double prevTime;
-//int curWater;
-//vector<shared_ptr<Texture> > water;
+// for caustics
+const double elapse = 0.15;
+double prevTime;
+int curWater;
+vector<shared_ptr<Texture> > water;
 
 // Vector of camera positions and directions, initialized at the beginning
 vector<Vector3d> camPosVec;
 vector<Vector3d> camDirVec;
-
-//// Vector of caustic camera positions and directions, initialized at the beginning
-//vector<Vector3d> caust_camPosVec;
-//vector<Vector3d> caust_camDirVec;
 
 // framebuffer and texture to render to
 GLuint framebuffer, renderTexture, depthRenderBuffer;
@@ -542,13 +539,12 @@ static void init()
     beta = 0.5 * M_PI;
     camPos = Vector3d(0.0, 1.0, -15.0);
     camDir = Vector3d(0.0, 0.0, 1.0);
-    
-//    // Initialize caustics camera variables
-//    caust_camPos = Vector3d();
-//    caust_camDir = Vector3d();
+    caust_camPos = Vector3d(0.0, 30.0, 0.0);
+    caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
     // Set background color.
-    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
+    glClearColor(.011f, .129f, .247f, 1.0f);
+//    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
 //    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
@@ -756,7 +752,9 @@ static void init()
     phongProg->addUniform("M");
     phongProg->addUniform("camPos");
     phongProg->addUniform("lightPos");
+    phongProg->addUniform("lightPos2");
     phongProg->addUniform("lightCol");
+    phongProg->addUniform("lightCol2");
     phongProg->addUniform("matAmb");
     phongProg->addUniform("matDif");
     phongProg->addUniform("matSpec");
@@ -764,6 +762,8 @@ static void init()
     phongProg->addUniform("baseAlpha");
     phongProg->addAttribute("vertPos");
     phongProg->addAttribute("vertNor");
+    phongProg->addUniform("caust_V");
+    phongProg->addUniform("water");
     
     // Initialize the fading blinn-phong program
     fadePhongProg = make_shared<Program>();
@@ -784,8 +784,9 @@ static void init()
     fadePhongProg->addUniform("baseAlpha");
     fadePhongProg->addAttribute("vertPos");
     fadePhongProg->addAttribute("vertNor");
-//    fadePhongProg->addUniform("caust_MV");
-//    fadePhongProg->addUniform("caust_P");
+    fadePhongProg->addUniform("caust_V");
+    fadePhongProg->addUniform("water");
+    
     
     // Initialize the fading, textured, blinn-phong program
     fadeTexPhongProg = make_shared<Program>();
@@ -797,23 +798,24 @@ static void init()
     fadeTexPhongProg->addUniform("M");
     fadeTexPhongProg->addUniform("camPos");
     fadeTexPhongProg->addUniform("lightPos");
-    fadeTexPhongProg->addUniform("lightCol");
+//    fadeTexPhongProg->addUniform("lightCol");
     fadeTexPhongProg->addUniform("lightPos1");
     fadeTexPhongProg->addUniform("lightPos2");
     fadeTexPhongProg->addUniform("lightCol1");
     fadeTexPhongProg->addUniform("lightCol2");
-    fadeTexPhongProg->addUniform("viewDist");
+    //fadeTexPhongProg->addUniform("viewDist");
     fadeTexPhongProg->addUniform("matAmb");
     fadeTexPhongProg->addUniform("matDif");
     fadeTexPhongProg->addUniform("matSpec");
     fadeTexPhongProg->addUniform("matShine");
     fadeTexPhongProg->addUniform("texture0");
-    fadeTexPhongProg->addUniform("brightness");
+    //fadeTexPhongProg->addUniform("brightness");
     fadeTexPhongProg->addAttribute("vertPos");
     fadeTexPhongProg->addAttribute("vertNor");
     fadeTexPhongProg->addAttribute("vertTex");
-//    fadeTexPhongProg->addUniform("caust_MV");
-//    fadeTexPhongProg->addUniform("caust_P");
+    fadeTexPhongProg->addUniform("caust_V");
+    fadeTexPhongProg->addUniform("water");
+    fadeTexPhongProg->addUniform("caust");
     
     // Initialize the fading, waving, blinn-phong program
     fadeWavePhongProg = make_shared<Program>();
@@ -835,24 +837,26 @@ static void init()
     fadeWavePhongProg->addUniform("wave");
     fadeWavePhongProg->addAttribute("vertPos");
     fadeWavePhongProg->addAttribute("vertNor");
-//    fadeWavePhongProg->addUniform("caust_MV");
-//    fadeWavePhongProg->addUniform("caust_P");
+    fadeWavePhongProg->addUniform("caust_V");
+    fadeWavePhongProg->addUniform("water");
     
-//    for (int i = 1; i <= 11; i++) {
-//        shared_ptr<Texture> water_texture = make_shared<Texture>();
-//        string num = std::to_string(i);
-//        water_texture->setFilename(RESOURCE_DIR + "water" + num + ".jpg");
-//        water_texture->init();
-//        water_texture->setWrapModes(GL_REPEAT, GL_REPEAT);
-//        water.push_back(water_texture);
-//    }
-//    prevTime = glfwGetTime();
-//    curWater = 0;
+    for (int i = 1; i <= 11; i++) {
+        shared_ptr<Texture> water_texture = make_shared<Texture>();
+        string num = std::to_string(i);
+        water_texture->setFilename(RESOURCE_DIR + "water" + num + ".jpg");
+        water_texture->init();
+        water_texture->setWrapModes(GL_REPEAT, GL_REPEAT);
+        water.push_back(water_texture);
+    }
+    prevTime = glfwGetTime();
+    curWater = 0;
 }
 
 void drawRocks(shared_ptr<MatrixStack> &M) {
     coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    
     setTextureMaterial(2, fadeTexPhongProg);
+    
     for (int i = 0; i < (int)rockTransforms.size()/3; i++) {
         // Switch textures at the 1 / 3 and 2 / 3 marks.
         if (i == (int)rockTransforms.size() / 3) {
@@ -906,6 +910,7 @@ void drawSand(shared_ptr<MatrixStack> &M, Vector2i &gridLL, Vector2i &gridUR, fl
 void drawSurface(shared_ptr<MatrixStack> &M, Vector2i &gridLL, Vector2i &gridUR, float scale) {
     glDisable(GL_CULL_FACE);
     surfaceTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    glUniform1f(fadeTexPhongProg->getUniform("caust"), 0);
     setTextureMaterial(1, fadeTexPhongProg);
     for (int i = gridLL(0); i < gridUR(0); i++) {
         for (int j = gridLL(1); j < gridUR(1); j++) {
@@ -919,6 +924,7 @@ void drawSurface(shared_ptr<MatrixStack> &M, Vector2i &gridLL, Vector2i &gridUR,
     }
     glEnable(GL_CULL_FACE);
     surfaceTex->unbind(0);
+    glUniform1f(fadeTexPhongProg->getUniform("caust"), 1.0);
 }
 
 void drawScenery(shared_ptr<MatrixStack> &M) {
@@ -959,7 +965,7 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
 
 void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
+    //wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, -1));
@@ -967,7 +973,7 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->rotate(10 * M_PI / 180.0f, Vector3f(0, 0, 1));
     M->rotate(20 * M_PI / 180.0f, Vector3f(0, 1, 0));
-    M->scale(12);
+    M->scale(8);
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
     xlighter->draw(fadeTexPhongProg);
     M->popMatrix();
@@ -975,18 +981,21 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
 }
 
 void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-              Vector3f &lightPos, Vector3f &lightCol, double t) {
+              shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     phongProg->bind();
     
     glUniformMatrix4fv(phongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(phongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(phongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
     glUniform3f(phongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(phongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform3f(phongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(phongProg->getUniform("lightCol"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(phongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
+    water_texture->bind(phongProg->getUniform("water"), curWater + 6);
+    glUniformMatrix4fv(phongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     
     setMaterial(2, phongProg);
-    
     
     M->pushMatrix();
     M->translate(Vector3f(5, 5, 5));
@@ -1000,6 +1009,8 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     setMaterial(4, phongProg);
     iver_fins->draw(phongProg);
     M->popMatrix();
+    
+    water_texture->unbind(curWater + 6);
     fadePhongProg->unbind();
 }
 
@@ -1009,29 +1020,31 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
  3. Fade in the distance
  */
 void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                         float lightPos[], float lightCol[]) {
+                         shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[]) {
     fadeTexPhongProg->bind();
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform1fv(fadeTexPhongProg->getUniform("lightPos"), 6, lightPos);
-    glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
-
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("lightPos"), 1, GL_FALSE, lightPos);
+//    glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
+    
     glUniform3f(fadeTexPhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
     glUniform3f(fadeTexPhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
     glUniform3f(fadeTexPhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
     glUniform3f(fadeTexPhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
-
-
-
-    glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
-    glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
+    
+    //glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
+    //glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
+    water_texture->bind(fadeTexPhongProg->getUniform("water"), curWater + 6);
+    glUniformMatrix4fv(fadeTexPhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
+    glUniform1f(fadeTexPhongProg->getUniform("caust"), 1.0f);
     
     drawScenery(M);
-//    drawChimChiminy(M);
-//    drawBeaufighter(M);
+    //    drawChimChiminy(M);
+    //    drawBeaufighter(M);
     drawXlighter(M);
     
+    water_texture->unbind(curWater + 6);
     fadeTexPhongProg->unbind();
 }
 
@@ -1041,7 +1054,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  3. Fade in the distance
  */
 void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1051,6 +1064,8 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
     glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
     glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
+    water_texture->bind(fadeWavePhongProg->getUniform("water"), curWater + 6);
+    glUniformMatrix4fv(fadeWavePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     
     // Draw seaweeds
     setMaterial(1, fadeWavePhongProg);
@@ -1063,6 +1078,7 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
         M->popMatrix();
     }
     
+    water_texture->unbind(curWater + 6);
     fadeWavePhongProg->unbind();
 }
 
@@ -1072,7 +1088,7 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
  3. Fade in the distance
  */
 void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1082,6 +1098,8 @@ void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
     glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
     glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+    glUniformMatrix4fv(fadePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
+    water_texture->bind(fadePhongProg->getUniform("water"), curWater + 6);
     
     // Draw Bubbles
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 0.5f);
@@ -1090,12 +1108,13 @@ void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
         bubbles[i].draw(fadePhongProg, t);
     }
     
+    water_texture->unbind(curWater + 6);
     fadePhongProg->unbind();
 }
 
 // MARK: Draw Roadmap
 void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-               Vector3f &lightPos,Vector3f &lightCol) {
+                shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos,Vector3f &lightCol) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
@@ -1105,6 +1124,8 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
     glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
+    water_texture->bind(fadePhongProg->getUniform("water"), 0);
+    glUniformMatrix4fv(fadePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     
     glBindVertexArray(path_VertexArrayID);
     glEnableVertexAttribArray(0);
@@ -1128,6 +1149,7 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     }
     
     glDisableVertexAttribArray(0);
+    water_texture->unbind(0);
     fadePhongProg->unbind();
 }
 
@@ -1181,16 +1203,15 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
 // MARK: render objects to scene
 static void render()
 {
-//    shared_ptr<Texture> water_texture;
-//    if (glfwGetTime() - prevTime >= elapse) {
-//        if (curWater == 10) {
-//            curWater = 0;
-//        } else
-//            curWater++;
-//        prevTime = glfwGetTime();
-//    };
-//    water_texture = water[curWater];
-    
+    if (glfwGetTime() - prevTime >= elapse) {
+        if (curWater == 10) {
+            curWater = 0;
+        } else
+            curWater++;
+        prevTime = glfwGetTime();
+    };
+    water_texture = water[curWater];
+
     double t = glfwGetTime();
     // Press p to pause and play path
     if(keyToggles['p']) { //keyToggles['p']) {
@@ -1218,7 +1239,7 @@ static void render()
                         8.0f, 1.0f, -10.0f};
     float lightCol[] = {0.25f, 0.25f, 0.5f,
                         1.0f, 1.0f, 1.0f};
-
+    
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
     // Vector3f lightCol(0.25f, 0.25f, 0.5f);
     
@@ -1239,34 +1260,28 @@ static void render()
     // Push this frame
     M->pushMatrix();
     
-//    // Caustic camera
-//    int width, height;
-//    glfwGetFramebufferSize(window, &width, &height);
-//    camera2->setAspect((float)width/(float)height);
-//    
-//    // Caustic matrix stacks
-//    auto caust_P = make_shared<MatrixStack>();
-//    auto caust_MV = make_shared<MatrixStack>();
-//    
-//    // Apply scene camera transforms
-//    caust_P->pushMatrix();
-//    camera2->applyProjectionMatrix(caust_P);
-//    caust_MV->pushMatrix();
-//    camera2->applyViewMatrix(caust_MV);
-
+    // Caustic matrix stacks
+    auto caust_V = make_shared<MatrixStack>();
+    
+    // Apply scene camera transforms
+    caust_V->pushMatrix();
+    Vector3d caust_lookAtPos = caust_camPos + caust_camDir;
+    caust_V->lookAt(caust_camPos.cast<float>(), caust_lookAtPos.cast<float>(), Vector3f(1.0f, 0.0f, 0.0f));
+    
     Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
     Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
-
-	drawSeaweed(P, V, M, lightPosVec, lightColVec, t);
-    drawBubbles(P, V, M, lightPosVec, lightColVec, t);
-    drawTexturedObjects(P, V, M, lightPos, lightCol);
-    drawIver(P, V, M, lightPosVec, lightColVec, t);
+    
+    drawSeaweed(P, V, M, caust_V, lightPosVec, lightColVec, t);
+    drawBubbles(P, V, M, caust_V, lightPosVec, lightColVec, t);
+    drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
+    drawIver(P, V, M, caust_V, lightPos, lightCol, t);
 //    drawPaths(P, V, M, lightPos, lightCol);
     
     // Pop matrix stacks.
     M->popMatrix();
     V->popMatrix();
     P->popMatrix();
+    caust_V->popMatrix();
 }
 
 int main(int argc, char **argv)
