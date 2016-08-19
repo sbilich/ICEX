@@ -2,7 +2,6 @@
 layout(location = 0) in vec4 vertPos;
 layout(location = 1) in vec3 vertNor;
 layout(location = 2) in vec2 vertTex;
-uniform vec3 lightPos[6];
 uniform vec3 lightPos1;
 uniform vec3 lightPos2;
 uniform vec3 camPos;

@@ -988,9 +988,9 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     glUniformMatrix4fv(phongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(phongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(phongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(phongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(phongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
     glUniform3f(phongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
-    glUniform3f(phongProg->getUniform("lightCol"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(phongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
     glUniform3f(phongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
     water_texture->bind(phongProg->getUniform("water"), curWater + 6);
@@ -1055,13 +1055,15 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  3. Fade in the distance
  */
 void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform3f(fadeWavePhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
     glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
@@ -1089,15 +1091,16 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
  3. Fade in the distance
  */
 void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
     glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+    glUniform3f(fadePhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(fadePhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(fadePhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
     glUniformMatrix4fv(fadePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     water_texture->bind(fadePhongProg->getUniform("water"), curWater + 6);
@@ -1272,8 +1275,8 @@ static void render()
     Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
     Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
     
-    drawSeaweed(P, V, M, caust_V, lightPosVec, lightColVec, t);
-    drawBubbles(P, V, M, caust_V, lightPosVec, lightColVec, t);
+    drawSeaweed(P, V, M, caust_V, lightPos, lightCol, t);
+    drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
     drawIver(P, V, M, caust_V, lightPos, lightCol, t);
 //    drawPaths(P, V, M, lightPos, lightCol);
