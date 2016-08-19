@@ -8,6 +8,7 @@ uniform float matAmb;
 uniform float matDif;
 uniform vec3 matSpec;
 uniform float matShine;
+uniform bool isAgisoftModel;
 //uniform float brightness; //with 1 being full and 0 being completely dark
 uniform sampler2D texture0;
 uniform sampler2D water;
@@ -99,18 +100,23 @@ void main()
 	// }
     
     // density of fog
-    float density = 0.0025;
+    // float density = 0.0025;
     
-    const float LOG2 = 1.442695;
-    float z = gl_FragCoord.z / gl_FragCoord.w;
-    float fogFactor = exp2(- density * density * z * z * LOG2);
-    fogFactor = clamp(fogFactor, 0.0f, 1.0f);
+    // const float LOG2 = 1.442695;
+    // float z = gl_FragCoord.z / gl_FragCoord.w;
+    // float fogFactor = exp2(- density * density * z * z * LOG2);
+    // fogFactor = clamp(fogFactor, 0.0f, 1.0f);
     
     vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
     
     vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
     vec3 finalColor = vertCol - 0.5*(redGreen * log(dist));
     finalColor += vec3(0.0f, 0.0f, 0.1f);
+
+    vec3 seaFloorColor = vec3(0.13f, 0.34f, 0.54f);
+    if(isAgisoftModel){
+    	finalColor -= (vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f);
+    }
 
 	// color = vec4(vertCol, max(alpha, 0.0f));
     if (caust) {

@@ -817,6 +817,7 @@ static void init()
     fadeTexPhongProg->addUniform("caust_V");
     fadeTexPhongProg->addUniform("water");
     fadeTexPhongProg->addUniform("caust");
+    fadeTexPhongProg->addUniform("isAgisoftModel");
     
     // Initialize the fading, waving, blinn-phong program
     fadeWavePhongProg = make_shared<Program>();
@@ -966,6 +967,7 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
 
 void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 1);
     //wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
@@ -1039,6 +1041,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     water_texture->bind(fadeTexPhongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     glUniform1f(fadeTexPhongProg->getUniform("caust"), 1.0f);
+    glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 0);
     
     drawScenery(M);
     //    drawChimChiminy(M);
