@@ -115,7 +115,7 @@ void main()
 
     vec3 seaFloorColor = vec3(0.13f, 0.34f, 0.54f);
     if(isAgisoftModel){
-    	finalColor -= (vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f);
+    	finalColor -= 0.3f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(5 - vertPosWorld.y, 0.0f));
     }
 
 	// color = vec4(vertCol, max(alpha, 0.0f));
