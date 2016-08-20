@@ -58,11 +58,12 @@ void main()
     
     //vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
 
-    vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
-    vec3 finalColor = vertCol - 0.5*(redGreen * log(dist));
-    finalColor += vec3(0.3f, 0.3f, 0.4f); //higher than others because Iver was very dark
+    //vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
+    vec3 finalColor = vertCol;// - 0.5*(redGreen * log(dist));
+    //finalColor += vec3(0.0f, 0.0f, 0.1f); 
+    //finalColor *= 3.0f;
 
-    color = vec4(finalColor + (caustColor*0.8), 1.0f);
+    color = vec4(finalColor + (caustColor*0.3), 1.0f);
 	//color = mix(fog_color, vec4(vertCol + caustColor, max(alpha * baseAlpha, 0.0f)), fogFactor);
 	// color = vertCol;
 }

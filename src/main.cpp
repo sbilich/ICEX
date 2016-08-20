@@ -752,9 +752,9 @@ static void init()
     phongProg->addUniform("V");
     phongProg->addUniform("M");
     phongProg->addUniform("camPos");
-    phongProg->addUniform("lightPos");
+    phongProg->addUniform("lightPos1");
     phongProg->addUniform("lightPos2");
-    phongProg->addUniform("lightCol");
+    phongProg->addUniform("lightCol1");
     phongProg->addUniform("lightCol2");
     phongProg->addUniform("matAmb");
     phongProg->addUniform("matDif");
@@ -775,8 +775,10 @@ static void init()
     fadePhongProg->addUniform("V");
     fadePhongProg->addUniform("M");
     fadePhongProg->addUniform("camPos");
-    fadePhongProg->addUniform("lightPos");
-    fadePhongProg->addUniform("lightCol");
+    fadePhongProg->addUniform("lightPos1");
+    fadePhongProg->addUniform("lightPos2");
+    fadePhongProg->addUniform("lightCol1");
+    fadePhongProg->addUniform("lightCol2");
     fadePhongProg->addUniform("viewDist");
     fadePhongProg->addUniform("matAmb");
     fadePhongProg->addUniform("matDif");
@@ -828,8 +830,10 @@ static void init()
     fadeWavePhongProg->addUniform("V");
     fadeWavePhongProg->addUniform("M");
     fadeWavePhongProg->addUniform("camPos");
-    fadeWavePhongProg->addUniform("lightPos");
-    fadeWavePhongProg->addUniform("lightCol");
+    fadeWavePhongProg->addUniform("lightPos1");
+    fadeWavePhongProg->addUniform("lightPos2");
+    fadeWavePhongProg->addUniform("lightCol1");
+    fadeWavePhongProg->addUniform("lightCol2");
     fadeWavePhongProg->addUniform("viewDist");
     fadeWavePhongProg->addUniform("matAmb");
     fadeWavePhongProg->addUniform("matDif");

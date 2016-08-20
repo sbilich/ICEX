@@ -110,12 +110,12 @@ void main()
     vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
     
     vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
-    vec3 finalColor = vertCol - 0.5*(redGreen * log(dist));
+    vec3 finalColor = vertCol - 0.3*(redGreen * log(dist));
     finalColor += vec3(0.0f, 0.0f, 0.1f);
 
-    vec3 seaFloorColor = vec3(0.13f, 0.34f, 0.54f);
+    vec3 seaFloorColor = vec3(0.33f, 0.34f, 0.64f);
     if(isAgisoftModel){
-    	finalColor -= 0.3f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(5 - vertPosWorld.y, 0.0f));
+    	finalColor -= 0.2f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(6 - vertPosWorld.y, 0.0f));
     }
 
 	// color = vec4(vertCol, max(alpha, 0.0f));
