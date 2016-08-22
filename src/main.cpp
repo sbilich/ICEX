@@ -543,7 +543,10 @@ static void init()
     caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
     // Set background color.
-    glClearColor(.011f, .129f, .247f, 1.0f);
+//    glClearColor(.011f, .129f, .247f, 1.0f);
+//    glClearColor(0.019f, .15f, .350f, 1.0f); // last used background
+    Vector3f bGColor = Vector3f(.011f, .129f, .247f) * 0.3f;
+    glClearColor(bGColor[0], bGColor[1], bGColor[2], 1.0f);
 //    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
 //    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
     // Enable z-buffer test.
@@ -751,15 +754,15 @@ static void init()
     phongProg->addUniform("V");
     phongProg->addUniform("M");
     phongProg->addUniform("camPos");
-    phongProg->addUniform("lightPos");
+    phongProg->addUniform("lightPos1");
     phongProg->addUniform("lightPos2");
-    phongProg->addUniform("lightCol");
+    phongProg->addUniform("lightCol1");
     phongProg->addUniform("lightCol2");
     phongProg->addUniform("matAmb");
     phongProg->addUniform("matDif");
     phongProg->addUniform("matSpec");
     phongProg->addUniform("matShine");
-    phongProg->addUniform("baseAlpha");
+//    phongProg->addUniform("baseAlpha");
     phongProg->addAttribute("vertPos");
     phongProg->addAttribute("vertNor");
     phongProg->addUniform("caust_V");
@@ -774,8 +777,10 @@ static void init()
     fadePhongProg->addUniform("V");
     fadePhongProg->addUniform("M");
     fadePhongProg->addUniform("camPos");
-    fadePhongProg->addUniform("lightPos");
-    fadePhongProg->addUniform("lightCol");
+    fadePhongProg->addUniform("lightPos1");
+    fadePhongProg->addUniform("lightPos2");
+    fadePhongProg->addUniform("lightCol1");
+    fadePhongProg->addUniform("lightCol2");
     fadePhongProg->addUniform("viewDist");
     fadePhongProg->addUniform("matAmb");
     fadePhongProg->addUniform("matDif");
@@ -797,7 +802,7 @@ static void init()
     fadeTexPhongProg->addUniform("V");
     fadeTexPhongProg->addUniform("M");
     fadeTexPhongProg->addUniform("camPos");
-    fadeTexPhongProg->addUniform("lightPos");
+//    fadeTexPhongProg->addUniform("lightPos");
 //    fadeTexPhongProg->addUniform("lightCol");
     fadeTexPhongProg->addUniform("lightPos1");
     fadeTexPhongProg->addUniform("lightPos2");
@@ -816,6 +821,7 @@ static void init()
     fadeTexPhongProg->addUniform("caust_V");
     fadeTexPhongProg->addUniform("water");
     fadeTexPhongProg->addUniform("caust");
+    fadeTexPhongProg->addUniform("isAgisoftModel");
     
     // Initialize the fading, waving, blinn-phong program
     fadeWavePhongProg = make_shared<Program>();
@@ -826,8 +832,10 @@ static void init()
     fadeWavePhongProg->addUniform("V");
     fadeWavePhongProg->addUniform("M");
     fadeWavePhongProg->addUniform("camPos");
-    fadeWavePhongProg->addUniform("lightPos");
-    fadeWavePhongProg->addUniform("lightCol");
+    fadeWavePhongProg->addUniform("lightPos1");
+    fadeWavePhongProg->addUniform("lightPos2");
+    fadeWavePhongProg->addUniform("lightCol1");
+    fadeWavePhongProg->addUniform("lightCol2");
     fadeWavePhongProg->addUniform("viewDist");
     fadeWavePhongProg->addUniform("matAmb");
     fadeWavePhongProg->addUniform("matDif");
@@ -965,6 +973,7 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
 
 void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
+    glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 1);
     //wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
@@ -987,11 +996,11 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     glUniformMatrix4fv(phongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(phongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(phongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(phongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(phongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
     glUniform3f(phongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
-    glUniform3f(phongProg->getUniform("lightCol"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(phongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
     glUniform3f(phongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
-    glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
+//    glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
     water_texture->bind(phongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(phongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     
@@ -1025,7 +1034,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniformMatrix4fv(fadeTexPhongProg->getUniform("lightPos"), 1, GL_FALSE, lightPos);
+//    glUniformMatrix4fv(fadeTexPhongProg->getUniform("lightPos"), 1, GL_FALSE, lightPos);
 //    glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
     
     glUniform3f(fadeTexPhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
@@ -1038,6 +1047,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     water_texture->bind(fadeTexPhongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     glUniform1f(fadeTexPhongProg->getUniform("caust"), 1.0f);
+    glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 0);
     
     drawScenery(M);
     //    drawChimChiminy(M);
@@ -1054,13 +1064,15 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
  3. Fade in the distance
  */
 void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     fadeWavePhongProg->bind();
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeWavePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeWavePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadeWavePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadeWavePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
+    glUniform3f(fadeWavePhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(fadeWavePhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     glUniform3f(fadeWavePhongProg->getUniform("wave"), 1.0f, 0.0f, 0.0f);
     glUniform1f(fadeWavePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadeWavePhongProg->getUniform("t"), (float)t);
@@ -1088,15 +1100,16 @@ void drawSeaweed(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
  3. Fade in the distance
  */
 void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                 shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos, Vector3f &lightCol, double t) {
+                 shared_ptr<MatrixStack> &caust_V, float lightPos[], float lightCol[], double t) {
     fadePhongProg->bind();
     glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
     glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
+    glUniform3f(fadePhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
+    glUniform3f(fadePhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
+    glUniform3f(fadePhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
+    glUniform3f(fadePhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
     glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
     glUniformMatrix4fv(fadePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     water_texture->bind(fadePhongProg->getUniform("water"), curWater + 6);
@@ -1236,9 +1249,9 @@ static void render()
     float aspect = actualW/(float)actualH;
     
     float lightPos[] = {200.0f, 200.0f, 200.0f,
-                        8.0f, 1.0f, -10.0f};
-    float lightCol[] = {0.25f, 0.25f, 0.5f,
-                        1.0f, 1.0f, 1.0f};
+                        -5.0f, 0.1f, 8.0f};
+    float lightCol[] = {0.5f, 0.5f, 0.75f,
+                         0.5f, 0.5f, 0.5f};
     
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
     // Vector3f lightCol(0.25f, 0.25f, 0.5f);
@@ -1268,11 +1281,11 @@ static void render()
     Vector3d caust_lookAtPos = caust_camPos + caust_camDir;
     caust_V->lookAt(caust_camPos.cast<float>(), caust_lookAtPos.cast<float>(), Vector3f(1.0f, 0.0f, 0.0f));
     
-    Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
-    Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
+//    Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
+//    Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
     
-    drawSeaweed(P, V, M, caust_V, lightPosVec, lightColVec, t);
-    drawBubbles(P, V, M, caust_V, lightPosVec, lightColVec, t);
+    drawSeaweed(P, V, M, caust_V, lightPos, lightCol, t);
+    drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
     drawIver(P, V, M, caust_V, lightPos, lightCol, t);
 //    drawPaths(P, V, M, lightPos, lightCol);

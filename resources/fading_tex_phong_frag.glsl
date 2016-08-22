@@ -8,6 +8,7 @@ uniform float matAmb;
 uniform float matDif;
 uniform vec3 matSpec;
 uniform float matShine;
+uniform bool isAgisoftModel;
 //uniform float brightness; //with 1 being full and 0 being completely dark
 uniform sampler2D texture0;
 uniform sampler2D water;
@@ -46,11 +47,11 @@ void main()
     vec3 halfVec1 = normalize(halfVecRaw1);
     vec3 halfVec2 = normalize(halfVecRaw2);
     
-    lightVec[0] = normalize(lightVecRaw[0]);
-    lightVec[1] = normalize(lightVecRaw[1]);
-    vec3 halfVec[2];
-    halfVec[0] = normalize(halfVecRaw[0]);
-    halfVec[1] = normalize(halfVecRaw[1]);
+    //lightVec[0] = normalize(lightVecRaw[0]);
+    //lightVec[1] = normalize(lightVecRaw[1]);
+    //vec3 halfVec[2];
+    //halfVec[0] = normalize(halfVecRaw[0]);
+    //halfVec[1] = normalize(halfVecRaw[1]);
 
 	// Compute Phong color.
 	// fragNor = normalize(fragNor);
@@ -86,20 +87,29 @@ void main()
 	// }
     
     // density of fog
-    float density = 0.0025;
+    //float density = 0.0025;
     
-    const float LOG2 = 1.442695;
-    float z = gl_FragCoord.z / gl_FragCoord.w;
-    float fogFactor = exp2(- density * density * z * z * LOG2);
-    fogFactor = clamp(fogFactor, 0.0f, 1.0f);
+    //const float LOG2 = 1.442695;
+    //float z = gl_FragCoord.z / gl_FragCoord.w;
+    //float fogFactor = exp2(- density * density * z * z * LOG2);
+    //fogFactor = clamp(fogFactor, 0.0f, 1.0f);
     
-    vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
+    vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
+    vec3 finalColor = vertCol - 0.5 * (redGreen * log(dist));
+    finalColor += vec3(0.0f, 0.0f, 0.1f);
+    
+    vec3 seaFloorColor = vec3(0.13f, 0.34f, 0.54f);
+    if (isAgisoftModel) {
+        finalColor -= (vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f);
+    }
 
 	// color = vec4(vertCol, max(alpha, 0.0f));
     if (caust) {
-        color = mix(fog_color, vec4((vertCol + caustColor) * 0.5/*brightness*/, 1.0f), fogFactor);
+        //color = vec4((vertCol + caustColor) * 0.5/*brightness*/, 1.0f) - mix(100.0, 0.0, fogFactor) * vec4(1.0, 0.25, 0.0, 1.0);
+        color = vec4(finalColor + (caustColor * 0.8), 1.0f);
     } else {
-        color = mix(fog_color, vec4(vertCol * 0.5/*brightness*/, 1.0f), fogFactor); //textures are way too bright so just uniformly darken them by 0.5
+        //color = vec4((vertCol) * 0.6/*brightness*/, 1.0f) - mix(1.0, 0.0, fogFactor) * vec4(0.3, 0.01, 0.00, 1.0); //textures are way too bright so just uniformly darken them by 0.5
+        color = vec4(finalColor, 1.0f);
     }
 
 	// color = vec4(fragTex.st, 0, 1);
