@@ -27,6 +27,7 @@ string RESOURCE_DIR = ""; // Where the resources are loaded from
 // GLSL programs
 shared_ptr<Program> phongProg; // simple phong lighting shader
 shared_ptr<Program> fadePhongProg;  // Fading objs with phong lighting
+shared_ptr<Program> solidColorProg;  // draws objs in a solid color
 shared_ptr<Program> fadeTexPhongProg;  // Fading, textured objs with phong lighting
 shared_ptr<Program> fadeWavePhongProg;  // Fading, waving objs with phong lighting
 shared_ptr<Program> tex_prog;          // Render the framebuffer texture to the screen
@@ -478,12 +479,12 @@ void loadRoadMapFromMotionPlanFiles() {
     float y = 3.0f;
     
     while (fscanf(vertexFile, " (%f, %f)  -  %*d", &x, &z) != EOF) {
-        printf("Vertex %d: ", vert / 3);
+//        printf("Vertex %d: ", vert / 3);
         path_vertices[vert++] = x;
-        printf("x is %.2f, ", x);
+//        printf("x is %.2f, ", x);
         path_vertices[vert++] = y;
         path_vertices[vert++] = z;
-        printf("z is %.2f\n", z);
+//        printf("z is %.2f\n", z);
     }
     
     fclose(vertexFile);
@@ -545,6 +546,7 @@ static void init()
     // Set background color.
     Vector3f bGColor = Vector3f(.011f, .129f, .247f) * 0.3f;
     glClearColor(bGColor[0], bGColor[1], bGColor[2], 1.0f);
+//    glClearColor(1.0, 1.0, 1.0, 1.0);
     
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
@@ -601,7 +603,7 @@ static void init()
     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
     
-    //loadRoadMapFromMotionPlanFiles();
+    loadRoadMapFromMotionPlanFiles();
     
     // Setup vao for rendering path lines
     glGenVertexArrays(1, &path_VertexArrayID);
@@ -785,6 +787,29 @@ static void init()
     fadePhongProg->addUniform("caust_V");
     fadePhongProg->addUniform("water");
     
+    // Initialize the fading blinn-phong program
+    fadePhongProg = make_shared<Program>();
+    fadePhongProg->setVerbose(true);
+    fadePhongProg->setShaderNames(RESOURCE_DIR + "fading_phong_vert.glsl", RESOURCE_DIR + "fading_phong_frag.glsl");
+    fadePhongProg->init();
+    fadePhongProg->addUniform("P");
+    fadePhongProg->addUniform("V");
+    fadePhongProg->addUniform("M");
+    fadePhongProg->addUniform("camPos");
+    fadePhongProg->addUniform("lightPos1");
+    fadePhongProg->addUniform("lightPos2");
+    fadePhongProg->addUniform("lightCol1");
+    fadePhongProg->addUniform("lightCol2");
+    fadePhongProg->addUniform("viewDist");
+    fadePhongProg->addUniform("matAmb");
+    fadePhongProg->addUniform("matDif");
+    fadePhongProg->addUniform("matSpec");
+    fadePhongProg->addUniform("matShine");
+    fadePhongProg->addUniform("baseAlpha");
+    fadePhongProg->addAttribute("vertPos");
+    fadePhongProg->addAttribute("vertNor");
+    fadePhongProg->addUniform("caust_V");
+    fadePhongProg->addUniform("water");
     
     // Initialize the fading, textured, blinn-phong program
     fadeTexPhongProg = make_shared<Program>();
@@ -811,6 +836,16 @@ static void init()
     fadeTexPhongProg->addUniform("water");
     fadeTexPhongProg->addUniform("caust");
     fadeTexPhongProg->addUniform("isAgisoftModel");
+    
+    // Initialize the solid color program
+    solidColorProg = make_shared<Program>();
+    solidColorProg->setVerbose(true);
+    solidColorProg->setShaderNames(RESOURCE_DIR + "solid_color_vert.glsl", RESOURCE_DIR + "solid_color_frag.glsl");
+    solidColorProg->init();
+    solidColorProg->addUniform("P");
+    solidColorProg->addUniform("V");
+    solidColorProg->addUniform("M");
+    solidColorProg->addAttribute("vertPos");
     
     // Initialize the fading, waving, blinn-phong program
     fadeWavePhongProg = make_shared<Program>();
@@ -1035,7 +1070,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     drawScenery(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
-    drawXlighter(M);
+//    drawXlighter(M);
     
     water_texture->unbind(curWater + 6);
     fadeTexPhongProg->unbind();
@@ -1109,20 +1144,12 @@ void drawBubbles(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_
 }
 
 // MARK: Draw Roadmap
-void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M,
-                shared_ptr<MatrixStack> &caust_V, Vector3f &lightPos,Vector3f &lightCol) {
-    fadePhongProg->bind();
-    glUniformMatrix4fv(fadePhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
-    glUniformMatrix4fv(fadePhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
-    glUniformMatrix4fv(fadePhongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    glUniform3f(fadePhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightPos"), lightPos[0], lightPos[1], lightPos[2]);
-    glUniform3f(fadePhongProg->getUniform("lightCol"), lightCol(0), lightCol(1), lightCol(2));
-    glUniform1f(fadePhongProg->getUniform("viewDist"), viewDist);
-    glUniform1f(fadePhongProg->getUniform("baseAlpha"), 1.0f);
-    water_texture->bind(fadePhongProg->getUniform("water"), 0);
-    glUniformMatrix4fv(fadePhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
-    
+void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr<MatrixStack> &M) {
+    solidColorProg->bind();
+    glUniformMatrix4fv(solidColorProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
+    glUniformMatrix4fv(solidColorProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
+    glUniformMatrix4fv(solidColorProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+
     glBindVertexArray(path_VertexArrayID);
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
@@ -1145,8 +1172,7 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     }
     
     glDisableVertexAttribArray(0);
-    water_texture->unbind(0);
-    fadePhongProg->unbind();
+    solidColorProg->unbind();
 }
 
 //void readFromFrameBuffer(int width, int height) {
@@ -1265,7 +1291,7 @@ static void render()
     drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
     drawIver(P, V, M, caust_V, lightPos, lightCol, t);
-//    drawPaths(P, V, M, lightPos, lightCol);
+    drawPaths(P, V, M);
     
     // Pop matrix stacks.
     M->popMatrix();
