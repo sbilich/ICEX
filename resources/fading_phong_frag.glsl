@@ -15,9 +15,7 @@ in vec3 halfVecRaw;
 in vec3 halfVecRaw2;
 in vec3 vertPosWorld;
 in float dist;
-// out vec4 color;
 layout(location = 0) out vec4 color;
-// layout(location = 0) out vec3 color;
 
 in vec4 caust_pos;
 
@@ -54,22 +52,9 @@ void main()
 	   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
 	}
     
-    // density of fog
-    float density = 0.003;
-    
-    //const float LOG2 = 1.442695;
-    //float z = gl_FragCoord.z / gl_FragCoord.w;
-    //float fogFactor = exp2(- density * density * z * z * LOG2);
-    //fogFactor = clamp(fogFactor, 0.0f, 1.0f);
-    
-    //vec4 fog_color = vec4(0.31f, 0.53f, 0.61f, 1.0f);
-    
     vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
     vec3 finalColor = vertCol - 0.5 * (redGreen * log(dist));
     finalColor += vec3(0.0f, 0.0f, 0.1f);
     
     color = vec4(finalColor + (caustColor * 0.8), max((alpha * baseAlpha) - 0.2, 0.0f));
-
-    //color = vec4((vertCol + caustColor) * 0.5, max((alpha * baseAlpha) - 0.2, 0.0f)) - mix(100.0, 0.0, fogFactor);
-    //color = mix(fog_color, vec4((vertCol + caustColor) * 0.5, max((alpha * baseAlpha) - 0.2, 0.0f)), fogFactor);
 }

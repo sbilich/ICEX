@@ -77,22 +77,6 @@ void main()
     specularCol += lightCol2 * pow(max(dot(fragNor, halfVec2), 0.0f), matShine) * matSpec;
     
     vertCol += diffuseCol + specularCol;
-
-	// Compute Fade alpha.
-	// float alpha = 1.0f;
-	// float fadeBegin = 0.5f * viewDist;
-    // float fadeEnd = viewDist;
-	// if (dist > fadeBegin) {
-	//   alpha = 1.0f - (dist - fadeBegin)/(fadeEnd - fadeBegin);
-	// }
-    
-    // density of fog
-    //float density = 0.0025;
-    
-    //const float LOG2 = 1.442695;
-    //float z = gl_FragCoord.z / gl_FragCoord.w;
-    //float fogFactor = exp2(- density * density * z * z * LOG2);
-    //fogFactor = clamp(fogFactor, 0.0f, 1.0f);
     
     vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
     vec3 finalColor = vertCol - 0.3 * (redGreen * log(dist));
@@ -103,14 +87,9 @@ void main()
         finalColor -= 0.2f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f));
     }
 
-	// color = vec4(vertCol, max(alpha, 0.0f));
     if (caust) {
-        //color = vec4((vertCol + caustColor) * 0.5/*brightness*/, 1.0f) - mix(100.0, 0.0, fogFactor) * vec4(1.0, 0.25, 0.0, 1.0);
         color = vec4(finalColor + (caustColor * 0.8), 1.0f);
     } else {
-        //color = vec4((vertCol) * 0.6/*brightness*/, 1.0f) - mix(1.0, 0.0, fogFactor) * vec4(0.3, 0.01, 0.00, 1.0); //textures are way too bright so just uniformly darken them by 0.5
         color = vec4(finalColor, 1.0f);
     }
-
-	// color = vec4(fragTex.st, 0, 1);
 }

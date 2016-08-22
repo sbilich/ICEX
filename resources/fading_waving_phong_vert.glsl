@@ -1,7 +1,8 @@
 #version 330 core
 layout(location = 0) in vec4 vertPos;
 layout(location = 1) in vec3 vertNor;
-uniform vec3 lightPos;
+uniform vec3 lightPos1;
+uniform vec3 lightPos2;
 uniform vec3 camPos;
 uniform mat4 P;
 uniform mat4 V;
@@ -10,7 +11,9 @@ uniform float t;
 uniform vec3 wave;
 out vec3 fragNorRaw;
 out vec3 lightVecRaw;
+out vec3 lightVecRaw2;
 out vec3 halfVecRaw;
+out vec3 halfVecRaw2;
 out vec3 vertPosWorld;
 out float dist;
 
@@ -33,8 +36,10 @@ void main()
 	// Compute Phong vectors.
 	vertPosWorld = (M * M0 *vertPos).xyz;
 	vec3 viewVec = normalize(camPos - vertPosWorld);
-	lightVecRaw = normalize(lightPos - vertPosWorld);
-	halfVecRaw = 0.5f * (viewVec + lightVecRaw);
+    lightVecRaw = normalize(lightPos1 - vertPosWorld);
+    lightVecRaw2 = normalize(lightPos2 - vertPosWorld);
+    halfVecRaw = 0.5f * (viewVec + lightVecRaw);
+    halfVecRaw2 = 0.5f * (viewVec + lightVecRaw2);
 
 	// Calculate dist for fading.
 	vec3 camDist = camPos - vertPosWorld;

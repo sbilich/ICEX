@@ -543,12 +543,9 @@ static void init()
     caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
     // Set background color.
-//    glClearColor(.011f, .129f, .247f, 1.0f);
-//    glClearColor(0.019f, .15f, .350f, 1.0f); // last used background
     Vector3f bGColor = Vector3f(.011f, .129f, .247f) * 0.3f;
     glClearColor(bGColor[0], bGColor[1], bGColor[2], 1.0f);
-//    glClearColor(.051f, .553f, .875f, 1.0f); // blue background
-//    glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // white background
+    
     // Enable z-buffer test.
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -576,7 +573,6 @@ static void init()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderTexture, 0);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
     
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, actualW, actualH);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderBuffer);
@@ -606,7 +602,6 @@ static void init()
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
     
     //loadRoadMapFromMotionPlanFiles();
-    //loadRoadMapFromCSVFiles();
     
     // Setup vao for rendering path lines
     glGenVertexArrays(1, &path_VertexArrayID);
@@ -616,7 +611,6 @@ static void init()
     glGenBuffers(1, &path_vertexbuffer);
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(path_vertices), path_vertices, GL_STATIC_DRAW);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(g_path_vertex_buffer_data), g_path_vertex_buffer_data, GL_STATIC_DRAW);
     
     IndxBuffObjs = new GLuint[path_indices.size()];
     
@@ -762,7 +756,6 @@ static void init()
     phongProg->addUniform("matDif");
     phongProg->addUniform("matSpec");
     phongProg->addUniform("matShine");
-//    phongProg->addUniform("baseAlpha");
     phongProg->addAttribute("vertPos");
     phongProg->addAttribute("vertNor");
     phongProg->addUniform("caust_V");
@@ -802,19 +795,15 @@ static void init()
     fadeTexPhongProg->addUniform("V");
     fadeTexPhongProg->addUniform("M");
     fadeTexPhongProg->addUniform("camPos");
-//    fadeTexPhongProg->addUniform("lightPos");
-//    fadeTexPhongProg->addUniform("lightCol");
     fadeTexPhongProg->addUniform("lightPos1");
     fadeTexPhongProg->addUniform("lightPos2");
     fadeTexPhongProg->addUniform("lightCol1");
     fadeTexPhongProg->addUniform("lightCol2");
-    //fadeTexPhongProg->addUniform("viewDist");
     fadeTexPhongProg->addUniform("matAmb");
     fadeTexPhongProg->addUniform("matDif");
     fadeTexPhongProg->addUniform("matSpec");
     fadeTexPhongProg->addUniform("matShine");
     fadeTexPhongProg->addUniform("texture0");
-    //fadeTexPhongProg->addUniform("brightness");
     fadeTexPhongProg->addAttribute("vertPos");
     fadeTexPhongProg->addAttribute("vertNor");
     fadeTexPhongProg->addAttribute("vertTex");
@@ -974,7 +963,6 @@ void drawBeaufighter(shared_ptr<MatrixStack> &M) {
 void drawXlighter(shared_ptr<MatrixStack> &M) {
     xlighterTex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
     glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 1);
-    //wreckTex->bind(fadeTexPhongProg->getUniform("brightness"), 0.3);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
     M->translate(Vector3f(0, 2, -1));
@@ -1000,7 +988,6 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     glUniform3f(phongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
     glUniform3f(phongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
     glUniform3f(phongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
-//    glUniform1f(phongProg->getUniform("baseAlpha"), 1.0f);
     water_texture->bind(phongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(phongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     
@@ -1034,16 +1021,12 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("P"), 1, GL_FALSE, P->topMatrix().data());
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("V"), 1, GL_FALSE, V->topMatrix().data());
     glUniform3f(fadeTexPhongProg->getUniform("camPos"), (float) camPos[0], (float) camPos[1], (float) camPos[2]);
-//    glUniformMatrix4fv(fadeTexPhongProg->getUniform("lightPos"), 1, GL_FALSE, lightPos);
-//    glUniform1fv(fadeTexPhongProg->getUniform("lightCol"), 6, lightCol);
     
     glUniform3f(fadeTexPhongProg->getUniform("lightPos1"), lightPos[0], lightPos[1], lightPos[2]);
     glUniform3f(fadeTexPhongProg->getUniform("lightPos2"), lightPos[3], lightPos[4], lightPos[5]);
     glUniform3f(fadeTexPhongProg->getUniform("lightCol1"), lightCol[0], lightCol[1], lightCol[2]);
     glUniform3f(fadeTexPhongProg->getUniform("lightCol2"), lightCol[3], lightCol[4], lightCol[5]);
     
-    //glUniform1f(fadeTexPhongProg->getUniform("viewDist"), viewDist);
-    //glUniform1f(fadeTexPhongProg->getUniform("brightness"), 0.5);
     water_texture->bind(fadeTexPhongProg->getUniform("water"), curWater + 6);
     glUniformMatrix4fv(fadeTexPhongProg->getUniform("caust_V"), 1, GL_FALSE, caust_V->topMatrix().data());
     glUniform1f(fadeTexPhongProg->getUniform("caust"), 1.0f);
@@ -1253,9 +1236,6 @@ static void render()
     float lightCol[] = {0.5f, 0.5f, 0.75f,
                          0.5f, 0.5f, 0.5f};
     
-    // Vector3f lightPos(200.0f, 200.0f, 200.0f);
-    // Vector3f lightCol(0.25f, 0.25f, 0.5f);
-    
     // Create the matrix stacks - please leave these alone for now
     auto P = make_shared<MatrixStack>();
     auto V = make_shared<MatrixStack>();
@@ -1280,9 +1260,6 @@ static void render()
     caust_V->pushMatrix();
     Vector3d caust_lookAtPos = caust_camPos + caust_camDir;
     caust_V->lookAt(caust_camPos.cast<float>(), caust_lookAtPos.cast<float>(), Vector3f(1.0f, 0.0f, 0.0f));
-    
-//    Vector3f lightPosVec = Vector3f(lightPos[0], lightPos[1], lightPos[2]);
-//    Vector3f lightColVec = Vector3f(lightCol[0], lightCol[1], lightCol[2]);
     
     drawSeaweed(P, V, M, caust_V, lightPos, lightCol, t);
     drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
