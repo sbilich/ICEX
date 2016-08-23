@@ -69,6 +69,7 @@ double mouse[2];
 double alpha, beta, alphaClamp;
 Vector3d camPos;
 Vector3d camDir;
+Vector3f g_lightPos;
 double speed;
 float viewDist;
 int iter = 0;
@@ -325,6 +326,24 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     else if (key == GLFW_KEY_G && action == GLFW_PRESS) {
         generate();
     }
+    else if(key == GLFW_KEY_J){
+        g_lightPos[2] += 0.5;
+    }
+    else if(key == GLFW_KEY_L){
+        g_lightPos[2] -= 0.5;
+    }
+    else if(key == GLFW_KEY_K){
+        g_lightPos[1] -= 0.5;
+    }
+    else if(key == GLFW_KEY_I){
+        g_lightPos[1] += 0.5;
+    }
+    else if(key == GLFW_KEY_U){
+        g_lightPos[0] -= 0.5;
+    }
+    else if(key == GLFW_KEY_O){
+        g_lightPos[0] += 0.5;
+    }
 }
 
 static void char_callback(GLFWwindow *window, unsigned int key)
@@ -539,6 +558,7 @@ static void init()
     beta = 0.5 * M_PI;
     camPos = Vector3d(0.0, 1.0, -15.0);
     camDir = Vector3d(0.0, 0.0, 1.0);
+    g_lightPos = Vector3f(-5.0f, 10.0f, 8.0f);
     caust_camPos = Vector3d(0.0, 30.0, 0.0);
     caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
@@ -1005,7 +1025,8 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     setMaterial(2, phongProg);
     
     M->pushMatrix();
-    M->translate(Vector3f(5, 5, 5));
+    //M->translate(Vector3f(5, 5, 5));
+    M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
     M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->scale(.35);
@@ -1247,7 +1268,7 @@ static void render()
     float aspect = actualW/(float)actualH;
     
     float lightPos[] = {200.0f, 200.0f, 200.0f,
-                        -5.0f, 0.1f, 8.0f};
+                        g_lightPos[0], g_lightPos[1], g_lightPos[2]};
     float lightCol[] = {0.5f, 0.5f, 0.75f,
                         0.5f, 0.5f, 0.5f};
     
