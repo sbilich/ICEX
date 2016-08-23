@@ -80,10 +80,11 @@ void main()
     
     vec3 redGreen = vec3(0.4f, 0.3f, 0.3f);
     vec3 finalColor = vertCol - 0.3 * (redGreen * log(dist));
+    caustColor -= 0.3*(redGreen * log(dist));
     finalColor += vec3(0.0f, 0.0f, 0.1f);
     
     vec3 seaFloorColor = vec3(0.33f, 0.34f, 0.54f);
-    if (isAgisoftModel) {
+    if (isAgisoftModel){ // && dot(fragNor, vec3(0, 1, 0)) < 0.3){
         finalColor -= 0.2f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f));
     }
 
