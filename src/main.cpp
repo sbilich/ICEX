@@ -1269,7 +1269,7 @@ static void render()
     
     float lightPos[] = {200.0f, 200.0f, 200.0f,
                         g_lightPos[0], g_lightPos[1], g_lightPos[2]};
-    float lightCol[] = {0.5f, 0.5f, 0.75f,
+    float lightCol[] = {0.75f, 0.75f, 1.0f,
                         0.5f, 0.5f, 0.5f};
     
     // Vector3f lightPos(200.0f, 200.0f, 200.0f);
