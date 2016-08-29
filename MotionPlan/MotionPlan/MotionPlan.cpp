@@ -25,7 +25,17 @@ float randFloat(float l, float h)
     return (1.0f - r) * l + r * h;
 }
 
-MotionPlan::MotionPlan(float x0, float x1, float y0, float y1, float z0, float z1, bool map) :
+char *MotionPlan::createPath(string ending, int num) {
+    char name[100];
+    char *ending_str = (char *)ending.c_str();
+    sprintf(name, ending_str, num);
+    
+    string path_str = string(proj_dir + name);
+    char *path = (char *) path_str.c_str();
+    return path;
+}
+
+MotionPlan::MotionPlan(float x0, float x1, float y0, float y1, float z0, float z1, bool map, string proj_dir) :
    x0(x0),
    x1(x1),
    y0(y0),
@@ -37,7 +47,8 @@ MotionPlan::MotionPlan(float x0, float x1, float y0, float y1, float z0, float z
    curIndex(0),
    curPath(0),
    mapFile(NULL),
-   printMap(map)
+   printMap(map),
+   proj_dir(proj_dir)
 {
     table = new unordered_map<Node *, int>();
     occupied_cells = new vector<int>();
@@ -153,9 +164,9 @@ vector<Node *> *MotionPlan::getPossiblePaths(Node *start, Node *goal)
     const double TIME_ELAPSED = tries * 60.0; // in seconds
     
     while (!timeout) {
-        char name[100];
-        sprintf(name, "/Users/sarabilich/Documents/ICEX/MotionPlan/MotionPlan/roadmaps/roadmap%d.txt", curPath);
-        mapFile = fopen(name, "w");
+        char *roadmap_str = createPath("roadmaps/roadmap%d.txt", curPath);
+        mapFile = fopen(roadmap_str, "w");
+        
         if (mapFile == NULL) {
             perror("Error");
         }
@@ -371,8 +382,7 @@ void MotionPlan::writePathToFile(FILE *file, Node *node, int num) {
  * Traverses roadmap to create a map of Nodes.
  */
 void MotionPlan::writeNodeTable() {
-    char name[100];
-    sprintf(name, "/Users/sarabilich/Documents/ICEX/MotionPlan/MotionPlan/paths/paths%d.txt", curPath);
+    char *name = createPath("paths/paths%d.txt", curPath);
     FILE *path_file = fopen(name, "w");
     int num = 0;
     
@@ -387,8 +397,7 @@ void MotionPlan::writeNodeTable() {
     
     fclose(path_file);
     
-    char name2[100];
-    sprintf(name2, "/Users/sarabilich/Documents/ICEX/MotionPlan/MotionPlan/info/info%d.txt", curPath);
+    char *name2 = createPath("info/info%d.txt", curPath);
     FILE *info_file = fopen(name2, "w");
     
     fprintf(info_file, "%d\n", curIndex); // write num of vertices
@@ -397,7 +406,6 @@ void MotionPlan::writeNodeTable() {
     curIndex = 0;
 }
 
-// TODO: Implement collision checking
 ///**
 // * Returns true if the edge from |node|'s parent to |node| doesn't collide with the environment 
 // * and false if the edge has at least one collision.
