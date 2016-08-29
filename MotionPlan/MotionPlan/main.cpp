@@ -13,6 +13,8 @@
 #include "Plan.hpp"
 using namespace std;
 
+string RESOURCE_DIR; // Where the resources are loaded from
+
 static vector<Plan *> *toPlans(vector<Node *> *paths) {
     vector<Plan *> *plans = new vector<Plan *>;
     for (int i = 0; i < paths->size(); i++) {
@@ -38,7 +40,13 @@ static void printPlansToFiles(vector<Plan *> *plans) {
 }
 
 int main(int argc, const char **argv) {
-    MotionPlan prm = MotionPlan(-16, 16, -16, 16, 0, 0, 1);
+    if(argc < 2) {
+        cout << "Please specify the resource directory." << endl;
+        return 0;
+    }
+    RESOURCE_DIR = argv[1] + string("/");
+   
+    MotionPlan prm = MotionPlan(-16, 16, -16, 16, 0, 0, 1, RESOURCE_DIR);
     Node *start(new Node(-16, -16, 0, 0, 0, 0, NULL));
     Node *goal(new Node(16, 16, 0, 0, 0, 0, NULL));
     
