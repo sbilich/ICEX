@@ -105,7 +105,7 @@ GLuint quad_vertexbuffer;
 //geometry for path render
 GLuint path_VertexArrayID;
 GLuint path_vertexbuffer;
-GLfloat *path_vertices;
+GLfloat (*path_vertices)[3] = NULL;
 //GLfloat path_vertices[150] = {
 //    -16.00, 3.00, -16.00,
 //    -14.49, 3.00, -15.08,
@@ -160,8 +160,8 @@ GLfloat *path_vertices;
 //};
 
 GLuint path_indexbufferID;
-vector<GLuint *> path_indices;
-vector<GLuint> length_indices;
+vector<void *> path_indices;
+vector<GLsizei> length_indices;
 //
 //GLuint index_list[50] = {
 //    0, 1, 2, 3, 4, 5,
@@ -486,23 +486,25 @@ void loadRoadMapFromMotionPlanFiles() {
     
     fgets(num, 10, infoFile);
     GLuint numVert = atoi(num);
-    //    printf("numVert is %d\n", numVert);
     fclose(infoFile);
     
     const string vertex_file_name = string(RESOURCE_DIR + "roadmap.txt");
     FILE *vertexFile = fopen(vertex_file_name.c_str(), "r");
-    path_vertices = (GLfloat *) malloc(sizeof(GLfloat) * numVert * 3);
+    path_vertices = (GLfloat (*)[3]) malloc(sizeof(*path_vertices) * numVert);
     
     int vert = 0;
     float x, z;
     float y = 3.0f;
     
     while (fscanf(vertexFile, " (%f, %f)  -  %*d", &x, &z) != EOF) {
-//        printf("Vertex %d: ", vert / 3);
-        path_vertices[vert++] = x;
+//        printf("Vertex %d: ", vert);
+        
+        path_vertices[vert][0] = x;
+        path_vertices[vert][1] = y;
+        path_vertices[vert][2] = z;
+        vert++;
+        
 //        printf("x is %.2f, ", x);
-        path_vertices[vert++] = y;
-        path_vertices[vert++] = z;
 //        printf("z is %.2f\n", z);
     }
     
@@ -521,7 +523,7 @@ void loadRoadMapFromMotionPlanFiles() {
         
         GLuint numIndices = 0;
         fscanf(indexFile, " number of indices: %d", &numIndices);
-        //        printf("num indices is %d\n", numIndices);
+//        printf("num indices is %d\n", numIndices);
         
         GLuint *indexArr = new GLuint[numIndices];
         length_indices.push_back(numIndices);
@@ -529,9 +531,7 @@ void loadRoadMapFromMotionPlanFiles() {
         fscanf(indexFile, " %s", cur);
         
         while (strcmp(cur, "end")) {
-            //printf("num is %s\n", cur);
             index = atoi(cur);
-            //printf("index is %d\n", count);
             
             assert(indexArr);
             indexArr[count++] = index;
@@ -1176,21 +1176,23 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
     
-    for (int i = 0; i < path_indices.size(); i++) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
+//    for (int i = 0; i < 2; i++) { //path_indices.size(); i++) {
+    
+//        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
         
-        //        printf("Printing out current ibo\n");
-        //        for (int j = 0; j < length_indices[i]; j++) {
-        //            printf("%d\n", IndxBuffObjs[i][j]);
-        //        }
-        //        printf("length of ibo %d is %d\n", i, length_indices[i]);
-        
-        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
+//        glDrawElements(GL_LINE_STRIP, length_indices[i], GL_UNSIGNED_INT, 0);
+    int *indices = (int *)path_indices[0];
+    printf("Printing list\n");
+    for (int i = 0; i < length_indices[0]; i++) {
+        printf("%d\n", indices[i]);
+    }
+        glMultiDrawElements(GL_LINE_STRIP, &length_indices[0], GL_UNSIGNED_INT, &path_indices[0], 1);
+    
         GLenum error = glGetError();
         if (error != GL_NO_ERROR) {
             cout << "error 1097: " << error << endl;
         }
-    }
+//    }
     
     glDisableVertexAttribArray(0);
     solidColorProg->unbind();
