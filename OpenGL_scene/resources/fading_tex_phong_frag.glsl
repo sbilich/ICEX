@@ -70,12 +70,12 @@ void main()
     vec3 ambientCol = matAmb * tex;
     vec3 diffuseCol;
     vec3 specularCol;
-    vec3 vertCol = ambientCol;
+    vec3 vertCol = ambientCol * 3.0f;;
     diffuseCol = lightCol1 * max(dot(fragNor, lightVec1), 0.0f) * matDif * tex;
-    diffuseCol += lightCol2 * 10.0f/(light2Dist) * max(dot(fragNor, lightVec2), 0.0f) * matDif * tex;
+    diffuseCol += lightCol2 * 30.0f/(light2Dist) * max(dot(fragNor, lightVec2), 0.0f) * matDif * tex;
     
     specularCol = lightCol1 * pow(max(dot(fragNor, halfVec1), 0.0f), matShine) * matSpec;
-    specularCol += lightCol2 * 10.0f/(light2Dist) * pow(max(dot(fragNor, halfVec2), 0.0f), matShine) * matSpec;
+    specularCol += lightCol2 * 30.0f/(light2Dist) * pow(max(dot(fragNor, halfVec2), 0.0f), matShine) * matSpec;
     
     vertCol += diffuseCol + specularCol;
     

@@ -345,6 +345,8 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
     }
     else if (key == GLFW_KEY_O) {
         g_lightPos[0] += 0.5;
+    } else if(key == GLFW_KEY_B){
+        cout << g_lightPos[0] << " " << g_lightPos[1] << " " << g_lightPos[2] << endl;
     }
 }
 
@@ -452,10 +454,9 @@ void setTextureMaterial(int i, shared_ptr<Program> prog) {
             glUniform1f(prog->getUniform("matShine"), 5.0f);
             break;
         case 1: // water surface
-            glUniform1f(prog->getUniform("matAmb"), 0.25f);
-            glUniform1f(prog->getUniform("matDif"), 1.0f);
-            glUniform3f(prog->getUniform("matSpec"), 2.0f, 2.0f, 2.0f);
-            glUniform1f(prog->getUniform("matShine"), 10.0f);
+            glUniform1f(prog->getUniform("matDif"), 0.3f);
+            glUniform3f(prog->getUniform("matSpec"), 0.2f, 0.2f, 0.2f);
+            glUniform1f(prog->getUniform("matShine"), 5.0f);
             break;
         case 2: // coral
             glUniform1f(prog->getUniform("matAmb"), 0.25f);
@@ -570,7 +571,7 @@ static void init()
     beta = 0.5 * M_PI;
     camPos = Vector3d(0.0, 1.0, -15.0);
     camDir = Vector3d(0.0, 0.0, 1.0);
-    g_lightPos = Vector3f(-5.0f, 10.0f, 8.0f);
+    g_lightPos = Vector3f(0.0f, 42.5f, -1.0f);
     caust_camPos = Vector3d(0.0, 30.0, 0.0);
     caust_camDir = Vector3d(0.0, -1.0, 0.0);
     
@@ -928,17 +929,16 @@ static void init()
 }
 
 void drawRocks(shared_ptr<MatrixStack> &M) {
-    coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
-    
     setTextureMaterial(2, fadeTexPhongProg);
     
-    for (int i = 0; i < (int)rockTransforms.size()/3; i++) {
+    for (int i = 0; i < (int)rockTransforms.size()/5; i++) {
+        coral0Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
         // Switch textures at the 1 / 3 and 2 / 3 marks.
-        if (i == (int)rockTransforms.size() / 3) {
+        if (i % 3 == 1) {
             coral0Tex->unbind(0);
             coral1Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
         }
-        else if (i == 2 * (int)rockTransforms.size() / 3) {
+        else if (i % 3 == 2) {
             coral1Tex->unbind(0);
             coral2Tex->bind(fadeTexPhongProg->getUniform("texture0"), 0);
         }
@@ -1009,7 +1009,7 @@ void drawScenery(shared_ptr<MatrixStack> &M) {
     Vector2i gridUR(20, 20);
     float scale = 10.0f;
     drawSand(M, gridLL, gridUR, scale);
-    drawSurface(M, gridLL, gridUR, scale);
+//    drawSurface(M, gridLL, gridUR, scale);
 }
 
 void drawChimChiminy(shared_ptr<MatrixStack> &M) {
@@ -1072,8 +1072,8 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     setMaterial(2, phongProg);
     
     M->pushMatrix();
-//    M->translate(Vector3f(0, 5, 5));
-    M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
+    M->translate(Vector3f(5, 5, 5));
+//    M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
     M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->scale(.35);
