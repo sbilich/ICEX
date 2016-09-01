@@ -748,7 +748,7 @@ static void init()
     
     // Initialize sand texture.
     sandTex = make_shared<Texture>();
-    sandTex->setFilename(RESOURCE_DIR + "sandLight.png");
+    sandTex->setFilename(RESOURCE_DIR + "sandDark.png");
     sandTex->init();
     
     // Initialize ocean surface texture.
