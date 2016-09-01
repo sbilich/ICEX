@@ -46,9 +46,9 @@ int main(int argc, const char **argv) {
     }
     RESOURCE_DIR = argv[1] + string("/");
    
-    MotionPlan prm = MotionPlan(-16, 16, -16, 16, 0, 0, 1, RESOURCE_DIR);
-    Node *start(new Node(-16, -16, 0, 0, 0, 0, NULL));
-    Node *goal(new Node(16, 16, 0, 0, 0, 0, NULL));
+    MotionPlan prm = MotionPlan(-1, 1, -1, 1, 0, 0, 1, RESOURCE_DIR);
+    Node *start(new Node(-1, -1, 0, 0, 0, 0, NULL));
+    Node *goal(new Node(1, 1, 0, 0, 0, 0, NULL));
     
     vector<Node *> *paths = prm.getPossiblePaths(start, goal);
     //vector<Node *> *paths = prm.getOnePath(start, goal);
