@@ -15,6 +15,7 @@ out vec3 lightVecRaw2;
 out vec3 halfVecRaw1;
 out vec3 halfVecRaw2;
 out float dist;
+out float light2Dist;
 out vec3 vertPosWorld;
 
 uniform mat4 caust_V;
@@ -36,6 +37,9 @@ void main()
     lightVecRaw2 = normalize(lightPos2 - vertPosWorld);
     halfVecRaw1 = 0.5f * (viewVec + lightVecRaw1);
     halfVecRaw2 = 0.5f * (viewVec + lightVecRaw2);
+    
+    vec3 lightToVertDist = vertPosWorld - lightPos2;
+    light2Dist = length(lightToVertDist);
 
 	// Send dist to frag shader for fading.
 	vec3 camDist = vertPosWorld - camPos;

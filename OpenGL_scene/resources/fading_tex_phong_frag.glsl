@@ -21,6 +21,7 @@ in vec3 halfVecRaw2;
 in vec3 lightVecRaw[2];
 in vec3 halfVecRaw[2];
 in float dist;
+in float light2Dist;
 in vec3 vertPosWorld;
 // out vec4 color;
 layout(location = 0) out vec4 color;
@@ -71,10 +72,10 @@ void main()
     vec3 specularCol;
     vec3 vertCol = ambientCol;
     diffuseCol = lightCol1 * max(dot(fragNor, lightVec1), 0.0f) * matDif * tex;
-    diffuseCol += lightCol2 * max(dot(fragNor, lightVec2), 0.0f) * matDif * tex;
+    diffuseCol += lightCol2 * 100.0f/(light2Dist*light2Dist) * max(dot(fragNor, lightVec2), 0.0f) * matDif * tex;
     
     specularCol = lightCol1 * pow(max(dot(fragNor, halfVec1), 0.0f), matShine) * matSpec;
-    specularCol += lightCol2 * pow(max(dot(fragNor, halfVec2), 0.0f), matShine) * matSpec;
+    specularCol += lightCol2 * 100.0f/(light2Dist*light2Dist) * pow(max(dot(fragNor, halfVec2), 0.0f), matShine) * matSpec;
     
     vertCol += diffuseCol + specularCol;
     
