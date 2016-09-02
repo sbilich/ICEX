@@ -107,7 +107,7 @@ GLuint quad_vertexbuffer;
 //geometry for path render
 GLuint path_VertexArrayID;
 GLuint path_vertexbuffer;
-GLfloat *path_vertices; //GLfloat (*path_vertices)[3] = NULL;
+GLfloat *path_vertices;
 GLuint numVert;
 //GLfloat path_vertices[150] = {
 //    -16.00, 3.00, -16.00,
@@ -551,6 +551,12 @@ void loadRoadMapFromMotionPlanFiles() {
             indexArr[count++] = index;
             fscanf(indexFile, " %s", cur);
         }
+        
+//        printf("Print scanned index\n");
+//        for (int j = 0; j < numIndices; j++) {
+//            printf("%d\n", indexArr[j]);
+//        }
+//        
         path_indices.push_back(indexArr);
         count = 0;
     }
@@ -661,12 +667,12 @@ static void init()
         cout << "error vertices: " << error << endl;
     }
     
-    IndxBuffObjs = new GLuint[path_indices.size()];
+    IndxBuffObjs = new GLuint[(int)path_indices.size()];
     
-    glGenBuffers(path_indices.size(), IndxBuffObjs);
-    for (int i=0; i < path_indices.size(); i++) {
+    glGenBuffers((int)path_indices.size(), IndxBuffObjs);
+    for (int i = 0; i < (int)path_indices.size(); i++) {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(path_indices[i]), path_indices[i], GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * path_indices.size(), path_indices[i], GL_STATIC_DRAW);
     }
     
     // End of added for ICEX
@@ -1136,7 +1142,7 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     drawScenery(M);
     //    drawChimChiminy(M);
     //    drawBeaufighter(M);
-    drawXlighter(M);
+//    drawXlighter(M);
     
     water_texture->unbind(curWater + 6);
     fadeTexPhongProg->unbind();
@@ -1221,22 +1227,16 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
     glBindBuffer(GL_ARRAY_BUFFER, path_vertexbuffer);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
     
-//    GLfloat *used_vertices = new GLfloat[numVert * 3];
-//    glGetBufferSubData(path_vertexbuffer, 0, numVert * 3, used_vertices);
-//    printf("Print Used Vertex data\n");
-//    for (int i = 0; i < (numVert * 3); i += 3) {
-//        printf("(%.2f, %.2f, %.2f)\n", used_vertices[i], used_vertices[i+1], used_vertices[i+2]);
-//    }
-    
     for (int i = 0; i < path_indices.size(); i++) {
     
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndxBuffObjs[i]);
+        int size = length_indices[i];
         
-        GLuint *used_indices = new GLuint[length_indices[i]];
-        printf("Length is %d\n", length_indices[i]);
-        glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * length_indices[i], used_indices);
+        GLuint *used_indices = new GLuint[size];
+        printf("Length is %d\n", size);
+        glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(GLuint) * size, used_indices);
         printf("Print Used Index data\n");
-        for (int j = 0; j < length_indices[i]; j++) {
+        for (int j = 0; j < size; j++) {
             printf("%d\n", used_indices[j]);
         }
     
@@ -1370,7 +1370,7 @@ static void render()
     drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
     drawIver(P, V, M, caust_V, lightPos, lightCol, t);
-//    drawPaths(P, V, M);
+    drawPaths(P, V, M);
     
     // Pop matrix stacks.
     M->popMatrix();
