@@ -72,6 +72,7 @@ Vector3d camDir;
 Vector3f g_lightPos;
 double speed;
 float viewDist;
+float g_time = 0;
 int iter = 0;
 int iterations = 720;
 
@@ -1028,17 +1029,27 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     setMaterial(2, phongProg);
     
     M->pushMatrix();
-    M->translate(Vector3f(5, 5, 5));
-    //M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
-    M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
-    M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
-    M->scale(.35);
-    glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    iver_bodyAndRudder->draw(phongProg);
-    setMaterial(3, phongProg);
-    iver_noseAndTail->draw(phongProg);
-    setMaterial(4, phongProg);
-    iver_fins->draw(phongProg);
+		//M->translate(Vector3f(5, 5, 5));
+		//M->translate(Vector3f(10.0f*cos(g_time), 5.0f, 10.0f*sin(g_time)));
+		//M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
+		//M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
+		M->rotate(g_time, Vector3f(0, 1, 0));
+		M->translate(Vector3f(5.0f, 8.0f + (2*sin(g_time)), 5.0f));
+		M->rotate(-65*M_PI/180.0f, Vector3f(0, 1, 0));
+		M->rotate(25*M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
+		M->scale(.35);
+		glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+		iver_bodyAndRudder->draw(phongProg);
+		setMaterial(3, phongProg);
+		iver_noseAndTail->draw(phongProg);
+		M->pushMatrix();
+			M->translate(Vector3f(0, 0, 4));
+			M->rotate(-25*M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
+			M->translate(Vector3f(0, 0, -4));
+			glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+			setMaterial(4, phongProg);
+			iver_fins->draw(phongProg);
+		M->popMatrix();
     M->popMatrix();
     
     water_texture->unbind(curWater + 6);
@@ -1248,6 +1259,7 @@ static void render()
     water_texture = water[curWater];
 
     double t = glfwGetTime();
+    g_time += 0.1;
     // Press p to pause and play path
     if(keyToggles['p']) { //keyToggles['p']) {
         iter = ((iter + 1) % iterations); // Make sure iterations is set correctly!
