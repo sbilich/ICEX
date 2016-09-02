@@ -40,5 +40,13 @@
 * 	- Checking for collisions
 *	- Use z coordinate and other dimensions: yaw, pitch, roll 
 *
+* * * * * *
+* Time/Length Testing:
+*	getOnePath() - finds the first path that is shorter than x, the distance ratio, times the Euclidean
+*			distance from the start node to the goal node.
+*	
+*	After short experimentation, it was found that 1.361 is the optimal distance ratio for finding a path.
+*	1.361 is optimal because it is the smallest ratio that is able to find a path.
 *
+*	For experimentation data, view the excel file “Experimentation_ObjDist”
 */
