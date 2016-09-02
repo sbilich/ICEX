@@ -42,7 +42,8 @@ shared_ptr<Shape> seaweed;
 shared_ptr<Shape> wreck;
 shared_ptr<Shape> iver_fins;
 shared_ptr<Shape> iver_noseAndTail;
-shared_ptr<Shape> iver_bodyAndRudder;
+shared_ptr<Shape> iver_body;
+shared_ptr<Shape> iver_rudder;
 shared_ptr<Shape> xlighter;
 
 // Wrapper classes to pass multiple objs to higher order classes
@@ -423,7 +424,7 @@ void setMaterial(int i, shared_ptr<Program> prog) {
             glUniform3f(prog->getUniform("matSpec"), 0.4f, 0.5f, 0.4f);
             glUniform1f(prog->getUniform("matShine"), 20.0f);
             break;
-        case 2: //iver bodyAndRudder
+        case 2: //iver body and iver rudder
             glUniform3f(prog->getUniform("matAmb"), 0.1f, 0.1f, 0.1f);
             glUniform3f(prog->getUniform("matDif"), 0.64f, 0.64f, 0.64f);
             glUniform3f(prog->getUniform("matSpec"), 0.5f, 0.5f, 0.5f);
@@ -737,11 +738,15 @@ static void init()
     //iver_fins->resize();
     iver_fins->init();
     
-    //intialize iver_bodyAndRudder
-    iver_bodyAndRudder = make_shared<Shape>();
-    iver_bodyAndRudder->loadMesh(RESOURCE_DIR + "iver_bodyAndRudder.obj");
-    //iver_bodyAndRudder->resize();
-    iver_bodyAndRudder->init();
+    //initialize iver_body
+    iver_body = make_shared<Shape>();
+    iver_body->loadMesh(RESOURCE_DIR + "iver_body.obj");
+    iver_body->init();
+    
+    //initialize iver_rudder
+    iver_rudder = make_shared<Shape>();
+    iver_rudder->loadMesh(RESOURCE_DIR + "iver_rudder.obj");
+    iver_rudder->init();
     
     //intialize iver_noseAndTail
     iver_noseAndTail = make_shared<Shape>();
@@ -1075,26 +1080,31 @@ void drawIver(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_ptr
     
     M->pushMatrix();
     //M->translate(Vector3f(5, 5, 5));
-    //M->translate(Vector3f(10.0f*cos(g_time), 5.0f, 10.0f*sin(g_time)));
-    //M->translate(Vector3f(g_lightPos[0], g_lightPos[1], g_lightPos[2]));
-    //M->rotate(-40 * M_PI / 180.0f, Vector3f(1, 0, 0));
-    M->rotate(g_time, Vector3f(0, 1, 0));
-    M->translate(Vector3f(5.0f, 8.0f + (2*sin(g_time)), 5.0f));
-    M->rotate(-65*M_PI/180.0f, Vector3f(0, 1, 0));
-    M->rotate(25*M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
-    M->scale(.35);
-    glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    iver_bodyAndRudder->draw(phongProg);
-    setMaterial(3, phongProg);
-    iver_noseAndTail->draw(phongProg);
-    M->pushMatrix();
-    M->translate(Vector3f(0, 0, 4));
-    M->rotate(-25*M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
-    M->translate(Vector3f(0, 0, -4));
-    glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
-    setMaterial(4, phongProg);
-    iver_fins->draw(phongProg);
-    M->popMatrix();
+        M->rotate(g_time, Vector3f(0, 1, 0));
+        M->translate(Vector3f(5.0f, 8.0f + (2 * sin(g_time)), 5.0f));
+        M->rotate(-65 * M_PI/180.0f, Vector3f(0, 1, 0));
+        M->rotate(25 * M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
+        M->scale(.35);
+        glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        iver_body->draw(phongProg);
+        M->pushMatrix();
+            M->translate(Vector3f(0, 0, 4));
+            M->rotate(-10 * M_PI/180.0f + (5 * M_PI/180.0f * sin(2 * g_time)), Vector3f(0, 1, 0));
+            M->translate(Vector3f(0, 0, -4));
+            glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+            iver_rudder->draw(phongProg);
+        M->popMatrix();
+        setMaterial(3, phongProg);
+        glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+        iver_noseAndTail->draw(phongProg);
+        M->pushMatrix();
+            M->translate(Vector3f(0, 0, 4));
+            M->rotate(-20 * M_PI/180.0f * cos(g_time), Vector3f(1, 0, 0));
+            M->translate(Vector3f(0, 0, -4));
+            glUniformMatrix4fv(phongProg->getUniform("M"), 1, GL_FALSE, M->topMatrix().data());
+            setMaterial(4, phongProg);
+            iver_fins->draw(phongProg);
+        M->popMatrix();
     M->popMatrix();
     
     water_texture->unbind(curWater + 6);
@@ -1303,7 +1313,7 @@ static void render()
     water_texture = water[curWater];
 
     double t = glfwGetTime();
-    g_time += 0.1;
+    g_time += 0.05;
     // Press p to pause and play path
     if(keyToggles['p']) { //keyToggles['p']) {
         iter = ((iter + 1) % iterations); // Make sure iterations is set correctly!
