@@ -1,0 +1,44 @@
+/**
+* MotionPlan
+*
+* Description: Generates paths from a starting node to an ending node, given their
+*		respective (x, y) coordinate values. Outputs four different formats 
+*		of files: “info”, “paths”, “plans”, and “roadmaps” files.
+*
+* Required 
+* Directory
+* Structure: 	MotionPlan project directory must contain directories 
+*		with the following names: “info”, “paths”, “plans”, and “roadmaps”.
+*
+* * * * * *
+* Main.cpp:	
+*	Input:	Expects to be passed a string containing the full path name to the
+* 		MotionPlan project directory. 
+*
+*		( To change start and ending node, manually edit the values in the
+*		  main function )		
+*
+*	Output:	Files containing data from multiple MotionPlan iterations.
+*
+* * * * * *
+* MotionPlan.hpp:
+*	Output: 
+*	  Four different formats of files:
+*		“info” - Contains the number of vertices produced while finding a path.
+*		“paths” - Contains every possible path ’explored’ by the path finding 
+*			   algorithm. Contains both the paths that don’t reach the goal
+*			   node and those that do reach the goal. For every path it includes:
+*			   the number of indices in the path and which indices are contained
+*			   within the path.
+*		“plans” - Contains paths that reach the goal node, lists the paths’ contained
+*			   coordinates.
+*		“roadmaps” - Contains the nodes, and their respective indices, produced during
+*			      one iteration of searching for a complete path to the goal node.
+*
+* * * * * *
+* To Implement:
+* 	- Checking for collisions
+*	- Use z coordinate and other dimensions: yaw, pitch, roll 
+*
+*
+*/
