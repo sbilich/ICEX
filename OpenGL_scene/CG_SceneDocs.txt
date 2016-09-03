@@ -1,0 +1,21 @@
+/**
+* CG OpenGL scene
+*
+* Description:	Generates a 3D underwater scene. 
+*
+* * * * * *
+* main.cpp:
+*	Input: 	Expects to be passed in a string that contains the relative path
+*		to the “resources” directory.
+*
+*	Rendering objects: The draw calls for each shader program are separated into
+*			    modular components to allow for easy removal and addition
+*			    of objects into and out of the scene. Comment out the
+*			    corresponding function calls to add/remove, i.e; to remove
+*			    the scenery, comment out the call to drawScenery() in 
+*			    drawTexturedObjects().
+*
+*	Drawing the roadmap (Work In Progress): 
+*
+*
+*/
