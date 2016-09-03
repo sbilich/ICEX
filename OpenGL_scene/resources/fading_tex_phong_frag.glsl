@@ -70,7 +70,7 @@ void main()
     vec3 ambientCol = matAmb * tex;
     vec3 diffuseCol;
     vec3 specularCol;
-    vec3 vertCol = ambientCol * 3.0f;;
+    vec3 vertCol = ambientCol * 3.0f;
     diffuseCol = lightCol1 * max(dot(fragNor, lightVec1), 0.0f) * matDif * tex;
     diffuseCol += lightCol2 * 30.0f/(light2Dist) * max(dot(fragNor, lightVec2), 0.0f) * matDif * tex;
     
@@ -84,9 +84,9 @@ void main()
     caustColor -= 0.3*(redGreen * log(dist));
     finalColor += vec3(0.0f, 0.0f, 0.1f);
     
-    vec3 seaFloorColor = vec3(0.33f, 0.34f, 0.54f);
+    vec3 seaFloorColor = vec3(0.33f, 0.34f, 0.64f);
     if (isAgisoftModel){ // && dot(fragNor, vec3(0, 1, 0)) < 0.3){
-        finalColor -= 0.2f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(1.5 - vertPosWorld.y, 0.0f));
+        finalColor -= 0.2f * ((vec3(1.0f, 1.0f, 1.0f) - seaFloorColor) * max(6 - vertPosWorld.y, 0.0f));
     }
 
     if (caust) {
