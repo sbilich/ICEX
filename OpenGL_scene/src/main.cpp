@@ -77,7 +77,7 @@ double speed;
 float viewDist;
 float g_time = 0;
 int iter = 0;
-int iterations = 720;
+int iterations = 360; //720;
 
 // Caustic camera parameters
 Vector3d caust_camPos;
@@ -207,11 +207,19 @@ void initCamPath() {
     double radius = 20;
     double dirDelta = (2 * M_PI) / iterations;
     double offset = M_PI;
+    int yMin = 2, yMax = 14;
+    double yDelta = (yMax - yMin) / iterations;
     
     for (int i = 0; i < iterations; i++) {
         double theta = i * dirDelta;
-        camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 6, radius * sin(theta) - 2));
-        camDirVec.push_back(Vector3d(cos(offset + theta), 0, -sin(theta)));
+        // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 6, radius * sin(theta) - 2));
+        camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 10, radius * sin(theta)));
+        // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, (rand() % (yMax + 1 - yMin)) + yMin, radius * sin(theta) - 2));
+        // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, yMin + i * yDelta, radius * sin(theta) - 2));
+        
+        camDirVec.push_back(Vector3d(cos(offset + theta), -M_PI_4 / 2, -sin(theta))); // yaw, pitch, roll
+        // camDirVec.push_back(Vector3d(cos(offset + theta), (rand() % (2 + 1)), -sin(theta))); // yaw, pitch, roll
+        // camDirVec.push_back(Vector3d(cos(offset + theta), 0, 0));
     }
     
     setCamPos6dof(camPosVec[0], camDirVec[0]);
@@ -1057,7 +1065,8 @@ void drawXlighter(shared_ptr<MatrixStack> &M) {
     glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 1);
     setTextureMaterial(4, fadeTexPhongProg);
     M->pushMatrix();
-    M->translate(Vector3f(0, 2, -1));
+    // M->translate(Vector3f(0, 2, -1));
+    M->translate(Vector3f(6, 2, 0));
     M->rotate(90 * M_PI / 180.0f, Vector3f(1, 0, 0));
     M->rotate(-45 * M_PI / 180.0f, Vector3f(0, 1, 0));
     M->rotate(10 * M_PI / 180.0f, Vector3f(0, 0, 1));
