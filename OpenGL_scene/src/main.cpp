@@ -15,6 +15,7 @@
 #include "Bubbles.h"
 #include "Utilities.h"
 #include "Image.h"
+#include "ImageProcessor.h"
 
 using namespace std;
 using namespace Eigen;
@@ -1140,9 +1141,9 @@ void drawTexturedObjects(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V,
     glUniform1i(fadeTexPhongProg->getUniform("isAgisoftModel"), 0);
     
     drawScenery(M);
-    //    drawChimChiminy(M);
-    //    drawBeaufighter(M);
-//    drawXlighter(M);
+    // drawChimChiminy(M);
+    // drawBeaufighter(M);
+    drawXlighter(M);
     
     water_texture->unbind(curWater + 6);
     fadeTexPhongProg->unbind();
@@ -1274,30 +1275,34 @@ void drawPaths(shared_ptr<MatrixStack> &P, shared_ptr<MatrixStack> &V, shared_pt
 //     cout << endl;
 //}
 
-//void writeToTexture() {
-//    // Zoe's code to write to texture
-//     //regardless unbind the FBO
-//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//
-//     // Clear framebuffer.
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//
-//     //draw textured quad
-//     tex_prog->bind();
-//     glActiveTexture(GL_TEXTURE0);
-//     glBindTexture(GL_TEXTURE_2D, renderTexture);
-//     glUniform1i(tex_prog->getUniform("texBuf"), 0);
-//
-//     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
-//
-//     glEnableVertexAttribArray(0);
-//     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
-//     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-//     glDisableVertexAttribArray(0);
-//     tex_prog->unbind();
-//}
+void writeToTexture() {
+   // Zoe's code to write to texture
+    //regardless unbind the FBO
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Clear framebuffer.
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    //draw textured quad
+    tex_prog->bind();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderTexture);
+    glUniform1i(tex_prog->getUniform("texBuf"), 0);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, myFrame);
+
+    // OpenCV Image Processing
+    cv::Mat ocvImg = ocvImgFromGlTex(renderTexture);
+    detectThirds(ocvImg);
+
+    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void *) 0);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glDisableVertexAttribArray(0);
+    tex_prog->unbind();
+}
 
 // MARK: render objects to scene
 static void render()
@@ -1328,7 +1333,8 @@ static void render()
     glfwGetFramebufferSize(window, &actualW, &actualH);
     glViewport(0, 0, actualW, actualH);
     
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     
     // Clear framebuffer.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1368,14 +1374,19 @@ static void render()
     drawSeaweed(P, V, M, caust_V, lightPos, lightCol, t);
     drawBubbles(P, V, M, caust_V, lightPos, lightCol, t);
     drawTexturedObjects(P, V, M, caust_V, lightPos, lightCol);
-    drawIver(P, V, M, caust_V, lightPos, lightCol, t);
-    drawPaths(P, V, M);
+    // drawIver(P, V, M, caust_V, lightPos, lightCol, t);
+    // drawPaths(P, V, M);
     
     // Pop matrix stacks.
     M->popMatrix();
     V->popMatrix();
     P->popMatrix();
     caust_V->popMatrix();
+
+    writeToTexture();
+
+    // cv::Mat ocvImg = ocvImgFromGlTex(renderTexture);
+    // detectThirds(ocvImg);
 }
 
 int main(int argc, char **argv)
