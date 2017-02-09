@@ -52,6 +52,22 @@ else()
   target_link_libraries(${CMAKE_PROJECT_NAME} ${GLEW_DIR}/lib/libGLEW.a)
 endif()
 
+#OpenCV
+# set(OPENCV_DIR "$ENV{OPENCV_DIR}")
+# if(NOT OPENCV_DIR)
+#   message(FATAL_ERROR "Please point the environment variable OPENCV_DIR to the root directory of your OpenCV installation.")
+# endif()
+# include_directories(${OPENCV_DIR}/opencv)
+# target_link_libraries(${CMAKE_PROJECT_NAME} ${OpenCV_LIBS})
+
+# find_package(OpenCV REQUIRED)
+
+find_package(OpenCV REQUIRED)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+include_directories(${OPENCV_DIR})
+target_link_libraries(${CMAKE_PROJECT_NAME} ${OpenCV_LIBS})
+
+
 # OS specific options and libraries
 if(WIN32)
   # c++0x is enabled by default.
