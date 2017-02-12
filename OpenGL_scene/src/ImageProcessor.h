@@ -8,7 +8,7 @@
 
 // #include "GLSL.h"
 
-int detectThirds(cv::Mat src);
+double detectThirds(cv::Mat src);
 
 cv::Mat ocvImgFromGlTex(GLuint glTexID);
 

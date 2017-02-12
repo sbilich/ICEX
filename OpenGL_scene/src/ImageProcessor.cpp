@@ -38,7 +38,7 @@ Mat ocvImgFromGlTex(GLuint glTexID) {
 	// return Mat::zeros(1024, 1024, CV_8UC3);
 }
 
-int detectThirds(Mat src) {
+double detectThirds(Mat src) {
 	// Mat src; 
 	Mat src_gray;
 	int thresh = 50;
@@ -93,21 +93,23 @@ int detectThirds(Mat src) {
       }
    }
    if (biggestI != -1) {
-      // rule of thirds using y position of top corner
       Rect bigRect = boundRect[biggestI];
       rectangle(drawing, bigRect.tl(), bigRect.br(), Scalar(255, 255, 255), 2, 8, 0);
 
       // rule of thirds using middle of box
-      double xThirds = (double)(bigRect.br().x - bigRect.tl().x) / picWidth,
-      	yThirds = (double)(bigRect.br().y - bigRect.tl().y) / picHeight;
-      cout << "x thirds %: " << xThirds << endl;
-      cout << "y thirds %: " << yThirds << endl;
+      // double xThirds = (double)(bigRect.br().x - bigRect.tl().x) / picWidth;
+      // double yThirds = (double)(bigRect.br().y - bigRect.tl().y) / picHeight;
+      // cout << "x thirds %: " << xThirds << endl;
+      // cout << "y thirds %: " << yThirds << endl;
+
+      // rule of thirds using y position of top corner
+      double yThirds = 1.0 - (double) bigRect.tl().y / picHeight;
 
       /// Show in a window
    	namedWindow("Thirds", CV_WINDOW_AUTOSIZE);
    	imshow("Thirds", drawing);
 
-   	return xThirds;
+   	return yThirds;
    }
 
    return -1;

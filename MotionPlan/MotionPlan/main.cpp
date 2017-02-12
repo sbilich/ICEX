@@ -27,9 +27,14 @@ static vector<Plan *> *toPlans(vector<Node *> *paths) {
 static void printPlansToFiles(vector<Plan *> *plans) {
     for (int i = 0; i < plans->size(); i++) {
         char name[100];
-        sprintf(name, "/Users/sarabilich/Documents/ICEX/MotionPlan/MotionPlan/plans/plan%d.txt", i);
+        // sprintf(name, "/Users/sarabilich/Documents/ICEX/MotionPlan/MotionPlan/plans/plan%d.txt", i);
+        // sprintf(name, "/Users/katiedavis/Documents/ICEX/Camera/ICEX/MotionPlan/MotionPlan/plans/plan%d.txt", i);
+        sprintf(name, "plans/plan%d.txt", i);
         
-        FILE *file = fopen(name, "w");
+        // char *ending_str = (char *)ending.c_str();
+        // sprintf(name, "plans/plan%d.txt", num);
+
+        FILE *file = fopen(string(RESOURCE_DIR + name).c_str(), "w");
         list<Node *> plan = (* plans)[i]->plan;
         
         for (list<Node *>::iterator j = plan.begin(); j != plan.end(); ++j) {

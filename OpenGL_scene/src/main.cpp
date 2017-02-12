@@ -94,6 +94,10 @@ double prevTime;
 int curWater;
 vector<shared_ptr<Texture> > water;
 
+// For image processing
+double thirdsTotal = 0;
+int thirdsIteration = 0;
+
 // Vector of camera positions and directions, initialized at the beginning
 vector<Vector3d> camPosVec;
 vector<Vector3d> camDirVec;
@@ -212,8 +216,8 @@ void initCamPath() {
     
     for (int i = 0; i < iterations; i++) {
         double theta = i * dirDelta;
-        // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 6, radius * sin(theta) - 2));
-        camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 10, radius * sin(theta)));
+        camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 6, radius * sin(theta) - 2));
+        // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, 10, radius * sin(theta)));
         // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, (rand() % (yMax + 1 - yMin)) + yMin, radius * sin(theta) - 2));
         // camPosVec.push_back(Vector3d(radius * cos(theta) + 6, yMin + i * yDelta, radius * sin(theta) - 2));
         
@@ -1303,7 +1307,14 @@ void writeToTexture() {
 
     // OpenCV Image Processing
     cv::Mat ocvImg = ocvImgFromGlTex(renderTexture);
-    detectThirds(ocvImg);
+    thirdsTotal += detectThirds(ocvImg);
+    // cout << "thirdsTotal: " << thirdsTotal << endl;
+    thirdsIteration++;
+    if (thirdsIteration % 50 == 0) {
+        // cout << "thirdsTotal: " << thirdsTotal << endl;
+        cout << "thirdsIteration: " << thirdsIteration << endl;
+        cout << "thirds: " << thirdsTotal / thirdsIteration << endl;
+    }
 
     glEnableVertexAttribArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, quad_vertexbuffer);
